@@ -1,0 +1,240 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+
+-- 免费无注册AI配置（慕名API，稳定可用）
+local FreeAIChat = {
+    API_URL = "https://api.suol.cc/v1/ai.php",
+    SystemPrompt = "你是一个精通Roblox Lua脚本开发的助手，回答简洁实用，生成的代码可直接运行，会根据用户需求调整脚本逻辑"
+}
+
+-- 设置AI人设
+function FreeAIChat:SetPersona(newPersona)
+    if newPersona and newPersona ~= "" then
+        self.SystemPrompt = newPersona
+    end
+end
+
+-- 获取AI回复（带错误处理）
+function FreeAIChat:GetReply(userMessage)
+    if not userMessage or userMessage:trim() == "" then
+        return "请输入有效的消息内容~"
+    end
+
+    -- 拼接人设和用户消息
+    local fullPrompt = string.format("[系统人设]%s\n[用户提问]%s", self.SystemPrompt, userMessage:trim())
+    local requestUrl = string.format("%s?msg=%s", self.API_URL, HttpService:UrlEncode(fullPrompt))
+
+    -- 异步请求，防止UI卡顿
+    local success, result = pcall(function()
+        return HttpService:GetAsync(requestUrl, false)
+    end)
+
+    if success then
+        local responseData = HttpService:JSONDecode(result)
+        return responseData.content or "AI未返回有效内容，请重试"
+    else
+        return string.format("请求失败：%s\n可检查网络或稍后再试", result)
+    end
+end
+
+-- 创建微信风格UI
+local function CreateChatInterface()
+    local LocalPlayer = Players.LocalPlayer
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+    -- 主界面容器
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "RobloxFreeAIChat"
+    ScreenGui.Parent = PlayerGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    -- 聊天窗口
+    local MainWindow = Instance.new("Frame")
+    MainWindow.Size = UDim2.new(0, 400, 0, 600)
+    MainWindow.Position = UDim2.new(0.5, -200, 0.5, -300)
+    MainWindow.BackgroundColor3 = Color3.new(0.93, 0.93, 0.93)
+    MainWindow.BorderSizePixel = 0
+    MainWindow.ClipsDescendants = true
+    MainWindow.Parent = ScreenGui
+
+    -- 标题栏
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Size = UDim2.new(1, 0, 0, 40)
+    TitleBar.BackgroundColor3 = Color3.new(0.12, 0.6, 0.24)
+    TitleBar.Parent = MainWindow
+
+    local TitleText = Instance.new("TextLabel")
+    TitleText.Size = UDim2.new(1, 0, 1, 0)
+    TitleText.BackgroundTransparency = 1
+    TitleText.Text = "Roblox 免费AI助手"
+    TitleText.TextColor3 = Color3.new(1, 1, 1)
+    TitleText.Font = Enum.Font.SourceSansBold
+    TitleText.TextSize = 18
+    TitleText.Parent = TitleBar
+
+    -- 人设按钮
+    local SetPersonaBtn = Instance.new("TextButton")
+    SetPersonaBtn.Size = UDim2.new(0, 80, 0, 28)
+    SetPersonaBtn.Position = UDim2.new(1, -90, 0.5, -14)
+    SetPersonaBtn.BackgroundColor3 = Color3.new(0.2, 0.7, 0.3)
+    SetPersonaBtn.Text = "设置人设"
+    SetPersonaBtn.TextColor3 = Color3.new(1, 1, 1)
+    SetPersonaBtn.TextSize = 14
+    SetPersonaBtn.BorderSizePixel = 0
+    SetPersonaBtn.Parent = TitleBar
+
+    -- 聊天内容滚动框
+    local ChatScroll = Instance.new("ScrollingFrame")
+    ChatScroll.Size = UDim2.new(1, -20, 1, -100)
+    ChatScroll.Position = UDim2.new(0, 10, 0, 40)
+    ChatScroll.BackgroundTransparency = 1
+    ChatScroll.ScrollBarThickness = 5
+    ChatScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ChatScroll.Parent = MainWindow
+
+    -- 输入区域
+    local InputFrame = Instance.new("Frame")
+    InputFrame.Size = UDim2.new(1, -20, 0, 45)
+    InputFrame.Position = UDim2.new(0, 10, 1, -55)
+    InputFrame.BackgroundColor3 = Color3.new(1, 1, 1)
+    InputFrame.Parent = MainWindow
+
+    local InputBox = Instance.new("TextBox")
+    InputBox.Size = UDim2.new(1, -70, 1, 0)
+    InputBox.BackgroundColor3 = Color3.new(0.97, 0.97, 0.97)
+    InputBox.PlaceholderText = "输入需求：写脚本/聊天/设置人设..."
+    InputBox.TextSize = 15
+    InputBox.ClearTextOnFocus = false
+    InputBox.BorderSizePixel = 0
+    InputBox.Parent = InputFrame
+
+    local SendBtn = Instance.new("TextButton")
+    SendBtn.Size = UDim2.new(0, 60, 1, 0)
+    SendBtn.Position = UDim2.new(1, -60, 0, 0)
+    SendBtn.BackgroundColor3 = Color3.new(0.12, 0.6, 0.24)
+    SendBtn.Text = "发送"
+    SendBtn.TextColor3 = Color3.new(1, 1, 1)
+    SendBtn.TextSize = 15
+    SendBtn.BorderSizePixel = 0
+    SendBtn.Parent = InputFrame
+
+    -- 添加聊天气泡的工具函数
+    local function AddMessageBubble(isUser, textContent)
+        local BubbleFrame = Instance.new("Frame")
+        BubbleFrame.BackgroundTransparency = 1
+        BubbleFrame.Parent = ChatScroll
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Size = UDim2.new(0, 280, 0, 0)
+        TextLabel.BackgroundColor3 = isUser and Color3.new(0.3, 0.8, 0.3) or Color3.new(1, 1, 1)
+        TextLabel.Text = textContent
+        TextLabel.TextColor3 = isUser and Color3.new(1, 1, 1) or Color3.new(0, 0, 0)
+        TextLabel.TextSize = 15
+        TextLabel.TextWrapped = true
+        TextLabel.Font = Enum.Font.SourceSans
+        TextLabel.Padding = UDim.new(0, 10)
+        TextLabel.Parent = BubbleFrame
+
+        -- 自动适配文本高度
+        TextLabel.Size = UDim2.new(0, 280, 0, TextLabel.TextBounds.Y + 20)
+        BubbleFrame.Size = TextLabel.Size
+
+        -- 定位气泡（用户右对齐，AI左对齐）
+        BubbleFrame.Position = UDim2.new(
+            isUser and 1 or 0,
+            isUser and -290 or 10,
+            0,
+            ChatScroll.CanvasSize.Y.Offset + 15
+        )
+
+        -- 更新滚动区域
+        ChatScroll.CanvasSize = UDim2.new(0, 0, 0, ChatScroll.CanvasSize.Y.Offset + BubbleFrame.Size.Y.Offset + 15)
+        ChatScroll.CanvasPosition = Vector2.new(0, ChatScroll.CanvasSize.Y.Offset)
+    end
+
+    -- 发送消息逻辑
+    local function SendMessage()
+        local userInput = InputBox.Text:trim()
+        if userInput == "" then return end
+
+        -- 显示用户消息
+        AddMessageBubble(true, userInput)
+        InputBox.Text = ""
+
+        -- 处理人设设置指令
+        if userInput:lower():find("人设") then
+            local newPersona = userInput:gsub("人设", ""):trim()
+            if newPersona ~= "" then
+                FreeAIChat:SetPersona(newPersona)
+                AddMessageBubble(false, "✅ 人设已更新为：\n" .. newPersona)
+            else
+                AddMessageBubble(false, "❌ 人设内容不能为空，请输入：人设+描述")
+            end
+            return
+        end
+
+        -- 显示加载提示
+        AddMessageBubble(false, "🤖 正在思考...")
+        local loadingBubble = ChatScroll:GetChildren()[#ChatScroll:GetChildren()]
+
+        -- 异步获取AI回复
+        task.spawn(function()
+            local aiReply = FreeAIChat:GetReply(userInput)
+            loadingBubble:Destroy()
+            AddMessageBubble(false, aiReply)
+        end)
+    end
+
+    -- 绑定事件
+    SendBtn.MouseButton1Click:Connect(SendMessage)
+    InputBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then SendMessage() end
+    end)
+    SetPersonaBtn.MouseButton1Click:Connect(function()
+        InputBox.Text = "人设："
+        InputBox:CaptureFocus()
+    end)
+
+    -- 窗口拖拽功能
+    local isDragging = false
+    local dragStartPos = Vector2.new()
+    local windowStartPos = Vector2.new()
+
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            dragStartPos = input.Position
+            windowStartPos = MainWindow.Position
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStartPos
+            MainWindow.Position = UDim2.new(
+                windowStartPos.X.Scale, windowStartPos.X.Offset + delta.X,
+                windowStartPos.Y.Scale, windowStartPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    -- 初始欢迎消息
+    AddMessageBubble(false, "🎉 你好！我是免费Roblox AI助手\n支持：\n1. 生成任意Roblox脚本\n2. 自由聊天解惑\n3. 自定义人设（输入：人设+描述）")
+end
+
+-- 仅在客户端运行
+if RunService:IsClient() then
+    -- 延迟启动，确保PlayerGui加载完成
+    task.wait(1)
+    CreateChatInterface()
+end
+
+return FreeAIChat
