@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local Clipboard = game:GetService("Clipboard") -- 剪贴板服务
 
 -- 免费无注册AI配置（慕名API，稳定可用）
 local FreeAIChat = {
@@ -120,7 +121,14 @@ local function CreateChatInterface()
     SendBtn.BorderSizePixel = 0
     SendBtn.Parent = InputFrame
 
-    -- 添加聊天气泡的工具函数
+    -- 提取代码块的辅助函数
+    local function ExtractCode(text)
+        -- 匹配 ```lua ... ``` 格式的代码块
+        local code = text:match("```lua(.-)```")
+        return code or text -- 没有代码块则返回全部文本
+    end
+
+    -- 添加聊天气泡的工具函数（新增复制按钮）
     local function AddMessageBubble(isUser, textContent)
         local BubbleFrame = Instance.new("Frame")
         BubbleFrame.BackgroundTransparency = 1
@@ -142,12 +150,36 @@ local function CreateChatInterface()
         BubbleFrame.Size = TextLabel.Size
 
         -- 定位气泡（用户右对齐，AI左对齐）
+        local bubbleXOffset = isUser and -290 or 10
         BubbleFrame.Position = UDim2.new(
             isUser and 1 or 0,
-            isUser and -290 or 10,
+            bubbleXOffset,
             0,
             ChatScroll.CanvasSize.Y.Offset + 15
         )
+
+        -- 仅AI消息添加复制按钮
+        if not isUser then
+            local CopyBtn = Instance.new("TextButton")
+            CopyBtn.Size = UDim2.new(0, 50, 0, 20)
+            CopyBtn.Position = UDim2.new(1, 5, 1, -25) -- 按钮在气泡右下角外侧
+            CopyBtn.BackgroundColor3 = Color3.new(0.12, 0.6, 0.24)
+            CopyBtn.Text = "复制"
+            CopyBtn.TextColor3 = Color3.new(1, 1, 1)
+            CopyBtn.TextSize = 12
+            CopyBtn.BorderSizePixel = 0
+            CopyBtn.Parent = BubbleFrame
+
+            -- 复制按钮点击事件
+            CopyBtn.MouseButton1Click:Connect(function()
+                local copyText = ExtractCode(textContent)
+                Clipboard:SetText(copyText)
+                -- 按钮状态提示
+                CopyBtn.Text = "已复制"
+                task.wait(1)
+                CopyBtn.Text = "复制"
+            end)
+        end
 
         -- 更新滚动区域
         ChatScroll.CanvasSize = UDim2.new(0, 0, 0, ChatScroll.CanvasSize.Y.Offset + BubbleFrame.Size.Y.Offset + 15)
@@ -227,7 +259,7 @@ local function CreateChatInterface()
     end)
 
     -- 初始欢迎消息
-    AddMessageBubble(false, "🎉 你好！我是免费Roblox AI助手\n支持：\n1. 生成任意Roblox脚本\n2. 自由聊天解惑\n3. 自定义人设（输入：人设+描述）")
+    AddMessageBubble(false, "🎉 你好！我是免费Roblox AI助手\n支持：\n1. 生成任意Roblox脚本\n2. 自由聊天解惑\n3. 自定义人设（输入：人设+描述）\n4. 点击AI消息旁【复制】按钮获取代码")
 end
 
 -- 仅在客户端运行
