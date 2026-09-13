@@ -20,8 +20,8 @@ screenGui.Parent = CoreGui
 screenGui.ResetOnSpawn = false  -- 防止重生时重置
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 500)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
+mainFrame.Size = UDim2.new(0, 300, 0, 480)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -240)
 mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -60,7 +60,7 @@ overlayCorner.Parent = backgroundOverlay
 
 -- 标题栏
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 45)
+titleBar.Size = UDim2.new(1, 0, 0, 40)
 titleBar.Position = UDim2.new(0, 0, 0, 0)
 titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 titleBar.BackgroundTransparency = 0.2
@@ -74,7 +74,7 @@ titleCorner.Parent = titleBar
 -- 标题
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -50, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "FE培根脚本附属恶搞"
 title.TextColor3 = Color3.fromRGB(255, 215, 0)  -- 金色
@@ -85,49 +85,49 @@ title.Parent = titleBar
 
 -- 培根图标
 local baconIcon = Instance.new("ImageLabel")
-baconIcon.Size = UDim2.new(0, 25, 0, 25)
-baconIcon.Position = UDim2.new(0, -30, 0.5, -12.5)
+baconIcon.Size = UDim2.new(0, 22, 0, 22)
+baconIcon.Position = UDim2.new(0, -28, 0.5, -11)
 baconIcon.BackgroundTransparency = 1
 baconIcon.Image = "rbxassetid://6031302931"  -- 培根图标
 baconIcon.Parent = titleBar
 
 -- 关闭按钮
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 32, 0, 32)
-closeButton.Position = UDim2.new(1, -37, 0, 6)
+closeButton.Size = UDim2.new(0, 28, 0, 28)
+closeButton.Position = UDim2.new(1, -32, 0, 6)
 closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeButton.BorderSizePixel = 0
 closeButton.Text = "×"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Font = Enum.Font.GothamBold
-closeButton.TextSize = 24
+closeButton.TextSize = 20
 closeButton.Parent = titleBar
 
 -- 关闭按钮圆角
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.CornerRadius = UDim.new(0, 7)
 closeCorner.Parent = closeButton
 
 -- 最小化按钮
 local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 32, 0, 32)
-minimizeButton.Position = UDim2.new(1, -74, 0, 6)
+minimizeButton.Size = UDim2.new(0, 28, 0, 28)
+minimizeButton.Position = UDim2.new(1, -64, 0, 6)
 minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-closeButton.BorderSizePixel = 0
+minimizeButton.BorderSizePixel = 0
 minimizeButton.Text = "−"
 minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.TextSize = 24
+minimizeButton.TextSize = 20
 minimizeButton.Parent = titleBar
 
 local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.CornerRadius = UDim.new(0, 8)
+minimizeCorner.CornerRadius = UDim.new(0, 7)
 minimizeCorner.Parent = minimizeButton
 
 -- 玩家列表框架
 local playersFrame = Instance.new("Frame")
-playersFrame.Size = UDim2.new(0.92, 0, 0, 160)
-playersFrame.Position = UDim2.new(0.04, 0, 0.15, 0)
+playersFrame.Size = UDim2.new(0.94, 0, 0, 140)
+playersFrame.Position = UDim2.new(0.03, 0, 0.10, 0)
 playersFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 playersFrame.BackgroundTransparency = 0.3
 playersFrame.Parent = mainFrame
@@ -139,29 +139,29 @@ playersCorner.Parent = playersFrame
 
 -- 玩家列表标题
 local playersLabel = Instance.new("TextLabel")
-playersLabel.Size = UDim2.new(1, 0, 0, 28)
+playersLabel.Size = UDim2.new(1, 0, 0, 24)
 playersLabel.Position = UDim2.new(0, 0, 0, 0)
 playersLabel.BackgroundTransparency = 1
 playersLabel.Text = "👥 选择目标玩家"
 playersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 playersLabel.TextXAlignment = Enum.TextXAlignment.Left
 playersLabel.Font = Enum.Font.GothamSemibold
-playersLabel.TextSize = 14
+playersLabel.TextSize = 13
 playersLabel.Parent = playersFrame
 
 -- 玩家选择框
 local playersScrolling = Instance.new("ScrollingFrame")
-playersScrolling.Size = UDim2.new(1, -10, 1, -35)
-playersScrolling.Position = UDim2.new(0, 5, 0, 30)
+playersScrolling.Size = UDim2.new(1, -10, 1, -30)
+playersScrolling.Position = UDim2.new(0, 5, 0, 26)
 playersScrolling.BackgroundTransparency = 1
-playersScrolling.ScrollBarThickness = 6
+playersScrolling.ScrollBarThickness = 5
 playersScrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 playersScrolling.Parent = playersFrame
 
 -- 模式选择框架
 local modesFrame = Instance.new("Frame")
-modesFrame.Size = UDim2.new(0.92, 0, 0, 130)
-modesFrame.Position = UDim2.new(0.04, 0, 0.55, 0)
+modesFrame.Size = UDim2.new(0.94, 0, 0, 155)
+modesFrame.Position = UDim2.new(0.03, 0, 0.38, 0)
 modesFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 modesFrame.BackgroundTransparency = 0.3
 modesFrame.Parent = mainFrame
@@ -173,33 +173,33 @@ modesCorner.Parent = modesFrame
 
 -- 模式选择标题
 local modesLabel = Instance.new("TextLabel")
-modesLabel.Size = UDim2.new(1, 0, 0, 28)
+modesLabel.Size = UDim2.new(1, 0, 0, 24)
 modesLabel.Position = UDim2.new(0, 0, 0, 0)
 modesLabel.BackgroundTransparency = 1
 modesLabel.Text = "🎮 选择附身模式"
 modesLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 modesLabel.TextXAlignment = Enum.TextXAlignment.Left
 modesLabel.Font = Enum.Font.GothamSemibold
-modesLabel.TextSize = 14
+modesLabel.TextSize = 13
 modesLabel.Parent = modesFrame
 
 -- 控制按钮框架
 local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(0.92, 0, 0, 50)
-controlsFrame.Position = UDim2.new(0.04, 0, 0.79, 0)
+controlsFrame.Size = UDim2.new(0.94, 0, 0, 42)
+controlsFrame.Position = UDim2.new(0.03, 0, 0.72, 0)
 controlsFrame.BackgroundTransparency = 1
 controlsFrame.Parent = mainFrame
 
 -- 状态标签
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 20)
-statusLabel.Position = UDim2.new(0, 0, 0.78, 0)
+statusLabel.Size = UDim2.new(1, 0, 0, 18)
+statusLabel.Position = UDim2.new(0, 0, 0.85, 0)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "状态: 等待操作"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 12
+statusLabel.TextSize = 11
 statusLabel.Parent = mainFrame
 
 -- 更新玩家列表
@@ -211,19 +211,19 @@ local function updatePlayersList()
     end
     
     local players = Players:GetPlayers()
-    playersScrolling.CanvasSize = UDim2.new(0, 0, 0, #players * 32)
+    playersScrolling.CanvasSize = UDim2.new(0, 0, 0, #players * 30)
     
     for i, player in pairs(players) do
         if player ~= localPlayer then
             local playerButton = Instance.new("TextButton")
-            playerButton.Size = UDim2.new(1, -10, 0, 28)
-            playerButton.Position = UDim2.new(0, 5, 0, (i-1) * 32)
+            playerButton.Size = UDim2.new(1, -10, 0, 26)
+            playerButton.Position = UDim2.new(0, 5, 0, (i-1) * 30)
             playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
             playerButton.BorderSizePixel = 0
             playerButton.Text = "👤 " .. player.Name
             playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
             playerButton.Font = Enum.Font.Gotham
-            playerButton.TextSize = 13
+            playerButton.TextSize = 12
             playerButton.TextXAlignment = Enum.TextXAlignment.Left
             playerButton.Parent = playersScrolling
             
@@ -275,14 +275,14 @@ for i, modeData in pairs(modes) do
     local modeIcon = modeData[2]
     
     local modeButton = Instance.new("TextButton")
-    modeButton.Size = UDim2.new(0.46, 0, 0, 28)
-    modeButton.Position = UDim2.new((i-1)%2 * 0.5, 5, 0, math.floor((i-1)/2) * 32 + 25)
+    modeButton.Size = UDim2.new(0.46, 0, 0, 26)
+    modeButton.Position = UDim2.new((i-1)%2 * 0.5, 5, 0, math.floor((i-1)/2) * 30 + 22)
     modeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     modeButton.BorderSizePixel = 0
     modeButton.Text = modeIcon .. " " .. modeName
     modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     modeButton.Font = Enum.Font.Gotham
-    modeButton.TextSize = 12
+    modeButton.TextSize = 11
     modeButton.TextXAlignment = Enum.TextXAlignment.Left
     modeButton.Parent = modesFrame
     
@@ -323,14 +323,14 @@ end
 
 -- 开始按钮
 local startButton = Instance.new("TextButton")
-startButton.Size = UDim2.new(0.48, 0, 0, 42)
+startButton.Size = UDim2.new(0.48, 0, 0, 38)
 startButton.Position = UDim2.new(0, 0, 0, 0)
 startButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
 startButton.BorderSizePixel = 0
 startButton.Text = "▶️ 开始附身"
 startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 startButton.Font = Enum.Font.GothamBold
-startButton.TextSize = 15
+startButton.TextSize = 14
 startButton.Parent = controlsFrame
 
 -- 开始按钮圆角
@@ -340,14 +340,14 @@ startCorner.Parent = startButton
 
 -- 停止按钮
 local stopButton = Instance.new("TextButton")
-stopButton.Size = UDim2.new(0.48, 0, 0, 42)
+stopButton.Size = UDim2.new(0.48, 0, 0, 38)
 stopButton.Position = UDim2.new(0.52, 0, 0, 0)
 stopButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
 stopButton.BorderSizePixel = 0
 stopButton.Text = "⏹️ 停止"
 stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 stopButton.Font = Enum.Font.GothamBold
-stopButton.TextSize = 15
+stopButton.TextSize = 14
 stopButton.Parent = controlsFrame
 
 -- 停止按钮圆角
@@ -357,14 +357,14 @@ stopCorner.Parent = stopButton
 
 -- 崩服按钮（底部）
 local crashButton = Instance.new("TextButton")
-crashButton.Size = UDim2.new(0.92, 0, 0, 42)
-crashButton.Position = UDim2.new(0.04, 0, 0.90, 0)
+crashButton.Size = UDim2.new(0.94, 0, 0, 38)
+crashButton.Position = UDim2.new(0.03, 0, 0.90, 0)
 crashButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 crashButton.BorderSizePixel = 0
 crashButton.Text = "💥 崩服"
 crashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 crashButton.Font = Enum.Font.GothamBold
-crashButton.TextSize = 15
+crashButton.TextSize = 14
 crashButton.Parent = mainFrame
 
 -- 崩服按钮圆角
@@ -495,7 +495,8 @@ local function startAttaching()
             if floatOffset < -2 then floatDirection = 1 end
             localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, floatOffset, -2)
         elseif currentMode == "固定身后" then
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -3)
+            -- 使用脚本的玩家固定在目标玩家身后（Z 轴正方向为后方）
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
         elseif currentMode == "脚下遁地" then
             local belowPos = targetHRP.Position + Vector3.new(0, -3, 0)
             localHRP.CFrame = CFrame.new(belowPos, targetHRP.Position)
@@ -531,7 +532,7 @@ end)
 local isMinimized = false
 local originalSize = mainFrame.Size
 local originalPosition = mainFrame.Position
-local minimizedSize = UDim2.new(0, 320, 0, 45)
+local minimizedSize = UDim2.new(0, 300, 0, 40)
 local minimizedPosition = UDim2.new(0, 10, 0, 10)
 
 minimizeButton.MouseButton1Click:Connect(function()
@@ -567,19 +568,19 @@ Players.PlayerRemoving:Connect(updatePlayersList)
 
 -- 手机端适配
 if UserInputService.TouchEnabled then
-    mainFrame.Size = UDim2.new(0, 350, 0, 540)
-    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -270)
+    mainFrame.Size = UDim2.new(0, 320, 0, 500)
+    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
     originalSize = mainFrame.Size
     originalPosition = mainFrame.Position
-    minimizedSize = UDim2.new(0, 350, 0, 50)
+    minimizedSize = UDim2.new(0, 320, 0, 45)
     
     -- 调整按钮大小便于触控
-    startButton.TextSize = 16
-    stopButton.TextSize = 16
-    crashButton.TextSize = 16
+    startButton.TextSize = 15
+    stopButton.TextSize = 15
+    crashButton.TextSize = 15
     for _, btn in pairs(playersScrolling:GetChildren()) do
         if btn:IsA("TextButton") then
-            btn.TextSize = 14
+            btn.TextSize = 13
         end
     end
 end
@@ -587,4 +588,4 @@ end
 print("FE培根脚本附属恶搞 加载成功！")
 print("作者: BaconScript Team")
 print("版本: 1.2.0")
-print("功能: 5种附身模式")
+print("功能: 7种附身模式 + 崩服")
