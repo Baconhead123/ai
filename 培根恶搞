@@ -20,8 +20,8 @@ screenGui.Parent = CoreGui
 screenGui.ResetOnSpawn = false  -- 防止重生时重置
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 480)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -240)
+mainFrame.Size = UDim2.new(0, 300, 0, 510)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -255)
 mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -126,8 +126,8 @@ minimizeCorner.Parent = minimizeButton
 
 -- 玩家列表框架
 local playersFrame = Instance.new("Frame")
-playersFrame.Size = UDim2.new(0.94, 0, 0, 140)
-playersFrame.Position = UDim2.new(0.03, 0, 0.10, 0)
+playersFrame.Size = UDim2.new(0.94, 0, 0, 130)
+playersFrame.Position = UDim2.new(0.03, 0, 0, 48)
 playersFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 playersFrame.BackgroundTransparency = 0.3
 playersFrame.Parent = mainFrame
@@ -160,8 +160,8 @@ playersScrolling.Parent = playersFrame
 
 -- 模式选择框架
 local modesFrame = Instance.new("Frame")
-modesFrame.Size = UDim2.new(0.94, 0, 0, 155)
-modesFrame.Position = UDim2.new(0.03, 0, 0.38, 0)
+modesFrame.Size = UDim2.new(0.94, 0, 0, 145)
+modesFrame.Position = UDim2.new(0.03, 0, 0, 186)
 modesFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 modesFrame.BackgroundTransparency = 0.3
 modesFrame.Parent = mainFrame
@@ -185,15 +185,15 @@ modesLabel.Parent = modesFrame
 
 -- 控制按钮框架
 local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(0.94, 0, 0, 42)
-controlsFrame.Position = UDim2.new(0.03, 0, 0.72, 0)
+controlsFrame.Size = UDim2.new(0.94, 0, 0, 40)
+controlsFrame.Position = UDim2.new(0.03, 0, 0, 340)
 controlsFrame.BackgroundTransparency = 1
 controlsFrame.Parent = mainFrame
 
 -- 状态标签
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 18)
-statusLabel.Position = UDim2.new(0, 0, 0.85, 0)
+statusLabel.Size = UDim2.new(0.94, 0, 0, 16)
+statusLabel.Position = UDim2.new(0.03, 0, 0, 388)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "状态: 等待操作"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -357,8 +357,8 @@ stopCorner.Parent = stopButton
 
 -- 崩服按钮（底部）
 local crashButton = Instance.new("TextButton")
-crashButton.Size = UDim2.new(0.94, 0, 0, 38)
-crashButton.Position = UDim2.new(0.03, 0, 0.90, 0)
+crashButton.Size = UDim2.new(0.94, 0, 0, 36)
+crashButton.Position = UDim2.new(0.03, 0, 0, 412)
 crashButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 crashButton.BorderSizePixel = 0
 crashButton.Text = "💥 崩服"
@@ -371,6 +371,23 @@ crashButton.Parent = mainFrame
 local crashCorner = Instance.new("UICorner")
 crashCorner.CornerRadius = UDim.new(0, 8)
 crashCorner.Parent = crashButton
+
+-- 神秘脚本按钮（崩服下方）
+local mysteryButton = Instance.new("TextButton")
+mysteryButton.Size = UDim2.new(0.94, 0, 0, 36)
+mysteryButton.Position = UDim2.new(0.03, 0, 0, 456)
+mysteryButton.BackgroundColor3 = Color3.fromRGB(120, 60, 220)
+mysteryButton.BorderSizePixel = 0
+mysteryButton.Text = "🕶️ 神秘脚本"
+mysteryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+mysteryButton.Font = Enum.Font.GothamBold
+mysteryButton.TextSize = 14
+mysteryButton.Parent = mainFrame
+
+-- 神秘脚本按钮圆角
+local mysteryCorner = Instance.new("UICorner")
+mysteryCorner.CornerRadius = UDim.new(0, 8)
+mysteryCorner.Parent = mysteryButton
 
 -- ===== 崩服逻辑（一次性装备背包中所有物品，再全部卸下，循环执行） =====
 local crashLooping = false   -- 默认不开启
@@ -446,6 +463,1654 @@ crashButton.MouseButton1Click:Connect(function()
             task.spawn(crashLoop)
         end
     end
+end)
+
+-- ===== 神秘脚本按钮：加载黑客模拟器终端 =====
+local mysteryLoaded = false
+
+mysteryButton.MouseButton1Click:Connect(function()
+    if mysteryLoaded then
+        statusLabel.Text = "状态: 神秘脚本已加载"
+        return
+    end
+    mysteryLoaded = true
+    statusLabel.Text = "状态: 正在加载神秘脚本..."
+    mysteryButton.Text = "🕶️ 已加载"
+
+    task.spawn(function()
+        --[[
+            ==============================================================
+             黑客模拟器 · 辅助终端 v2.1（全平台 / PC + 手机）
+             按键：PC 按 K 切换面板；手机点击悬浮按钮
+            ==============================================================
+        ]]
+
+        local Players          = game:GetService("Players")
+        local RunService       = game:GetService("RunService")
+        local UserInputService = game:GetService("UserInputService")
+        local TweenService     = game:GetService("TweenService")
+        local Lighting         = game:GetService("Lighting")
+        local Workspace        = game:GetService("Workspace")
+
+        local LP     = Players.LocalPlayer
+        local Camera = Workspace.CurrentCamera
+
+        -- 平台判定
+        local IS_TOUCH  = UserInputService.TouchEnabled
+        local IS_DESKTOP = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
+
+        --==============================================================
+        --  主题
+        --==============================================================
+        local Theme = {
+            Bg           = Color3.fromRGB(11, 13, 18),
+            Surface      = Color3.fromRGB(20, 24, 32),
+            Border       = Color3.fromRGB(38, 44, 58),
+
+            Text         = Color3.fromRGB(232, 238, 248),
+            TextDim      = Color3.fromRGB(128, 138, 158),
+            TextMute     = Color3.fromRGB(78, 86, 104),
+
+            Accent       = Color3.fromRGB(0, 230, 165),
+            AccentDeep   = Color3.fromRGB(0, 118, 88),
+            AccentBlue   = Color3.fromRGB(0, 175, 255),
+            Danger       = Color3.fromRGB(255, 82, 100),
+
+            Font         = Enum.Font.Gotham,
+            FontMed      = Enum.Font.GothamMedium,
+            FontBold     = Enum.Font.GothamBold,
+        }
+
+        --==============================================================
+        --  工具
+        --==============================================================
+        local function new(className, props)
+            local inst = Instance.new(className)
+            local parent
+            if props then
+                for k, v in pairs(props) do
+                    if k == "Parent" then parent = v else inst[k] = v end
+                end
+            end
+            if parent then inst.Parent = parent end
+            return inst
+        end
+
+        local function radius(obj, r)
+            return new("UICorner", { CornerRadius = UDim.new(0, r), Parent = obj })
+        end
+
+        local function outline(obj, color, thickness, transparency)
+            return new("UIStroke", {
+                Color = color or Theme.Border,
+                Thickness = thickness or 1,
+                Transparency = transparency or 0,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                Parent = obj,
+            })
+        end
+
+        local function gradient(obj, c1, c2, rotation)
+            return new("UIGradient", {
+                Color = ColorSequence.new(c1, c2),
+                Rotation = rotation or 0,
+                Parent = obj,
+            })
+        end
+
+        local function tween(obj, time, props, style, dir)
+            local t = TweenService:Create(
+                obj,
+                TweenInfo.new(time, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out),
+                props
+            )
+            t:Play()
+            return t
+        end
+
+        --==============================================================
+        --  状态 / 配置
+        --==============================================================
+        local State = {
+            Fly = false, Ghost = false, SpeedUp = false, InfJump = false,
+            XRay = false, Fullbright = false, NoFog = false, NightVis = false,
+        }
+
+        local Config = {
+            FlySpeed = 80, GhostHeight = 4, WalkSpeed = 85,
+            GhostSpeed = 45, JumpPower = 60,
+        }
+
+        local Defaults = { WalkSpeed = 16, JumpPower = 50 }
+
+        --==============================================================
+        --  角色工具
+        --==============================================================
+        local function getChar()  return LP.Character end
+        local function getHum()   local c = getChar() return c and c:FindFirstChildOfClass("Humanoid") end
+        local function getRoot()  local c = getChar() return c and c:FindFirstChild("HumanoidRootPart") end
+
+        local function getFlatLook(root)
+            local look = Camera.CFrame.LookVector
+            local flat = Vector3.new(look.X, 0, look.Z)
+            if flat.Magnitude < 0.01 then
+                local rl = root.CFrame.LookVector
+                flat = Vector3.new(rl.X, 0, rl.Z)
+            end
+            return flat.Unit
+        end
+
+        -- 虚拟摇杆状态（手机）
+        local Stick = {
+            active = false,
+            dirX = 0,
+            dirY = 0,
+            up = false,
+            down = false,
+        }
+
+        -- 获取移动方向（PC 键盘 + 手机摇杆）
+        local function getMoveDir(withVertical)
+            local dir = Vector3.zero
+            local cf = Camera.CFrame
+
+            if IS_DESKTOP then
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cf.LookVector  end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cf.LookVector  end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cf.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cf.RightVector end
+                if withVertical then
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space)     then dir += Vector3.yAxis end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then dir -= Vector3.yAxis end
+                end
+            end
+
+            -- 手机摇杆方向
+            if IS_TOUCH and Stick.active then
+                local mag = math.sqrt(Stick.dirX ^ 2 + Stick.dirY ^ 2)
+                if mag > 0.12 then
+                    local stickDir = cf.RightVector * Stick.dirX + cf.LookVector * (-Stick.dirY)
+                    dir += Vector3.new(stickDir.X, dir.Y, stickDir.Z)
+                end
+            end
+
+            -- 手机升降按钮
+            if IS_TOUCH and withVertical then
+                if Stick.up   then dir += Vector3.yAxis end
+                if Stick.down then dir -= Vector3.yAxis end
+            end
+
+            if not withVertical then
+                dir = Vector3.new(dir.X, 0, dir.Z)
+            end
+
+            return dir
+        end
+
+        --==============================================================
+        --  功能：飞行 / 穿墙
+        --==============================================================
+        local setFly, setGhost
+
+        local flyAtt, flyLV, flyAO
+        local ghostAtt, ghostLV, ghostAO
+
+        local function clearFlyObjects()
+            if flyLV then flyLV:Destroy() flyLV = nil end
+            if flyAO then flyAO:Destroy() flyAO = nil end
+            if flyAtt then flyAtt:Destroy() flyAtt = nil end
+        end
+
+        local function clearGhostObjects()
+            if ghostLV then ghostLV:Destroy() ghostLV = nil end
+            if ghostAO then ghostAO:Destroy() ghostAO = nil end
+            if ghostAtt then ghostAtt:Destroy() ghostAtt = nil end
+        end
+
+        setFly = function(on)
+            State.Fly = on
+            local hum, root = getHum(), getRoot()
+            if not hum or not root then State.Fly = false return end
+
+            if on then
+                if State.Ghost then setGhost(false) end
+                clearFlyObjects()
+                hum.PlatformStand = true
+                flyAtt = new("Attachment", { Name = "HackFlyAtt", Parent = root })
+                flyLV = new("LinearVelocity", {
+                    Attachment0 = flyAtt,
+                    RelativeTo = Enum.ActuatorRelativeTo.World,
+                    MaxForce = math.huge,
+                    VectorVelocity = Vector3.zero,
+                    Parent = root,
+                })
+                flyAO = new("AlignOrientation", {
+                    Attachment0 = flyAtt,
+                    Mode = Enum.OrientationAlignmentMode.OneAttachment,
+                    MaxTorque = math.huge,
+                    Responsiveness = 30,
+                    Parent = root,
+                })
+            else
+                clearFlyObjects()
+                if hum then hum.PlatformStand = false end
+            end
+        end
+
+        local function setCharCollision(canCollide)
+            local c = getChar()
+            if not c then return end
+            for _, d in ipairs(c:GetDescendants()) do
+                if d:IsA("BasePart") then d.CanCollide = canCollide end
+            end
+        end
+
+        setGhost = function(on)
+            State.Ghost = on
+            local hum, root = getHum(), getRoot()
+            if not hum or not root then State.Ghost = false return end
+
+            if on then
+                if State.Fly then setFly(false) end
+                clearGhostObjects()
+                hum.PlatformStand = true
+                setCharCollision(false)
+                ghostAtt = new("Attachment", { Name = "HackGhostAtt", Parent = root })
+                ghostLV = new("LinearVelocity", {
+                    Attachment0 = ghostAtt,
+                    RelativeTo = Enum.ActuatorRelativeTo.World,
+                    MaxForce = math.huge,
+                    Parent = root,
+                })
+                ghostAO = new("AlignOrientation", {
+                    Attachment0 = ghostAtt,
+                    Mode = Enum.OrientationAlignmentMode.OneAttachment,
+                    MaxTorque = math.huge,
+                    Responsiveness = 30,
+                    Parent = root,
+                })
+            else
+                clearGhostObjects()
+                setCharCollision(true)
+                if hum then hum.PlatformStand = false end
+            end
+        end
+
+        --==============================================================
+        --  功能：加速 / 跳跃
+        --==============================================================
+        local function setSpeedUp(on)
+            State.SpeedUp = on
+            local hum = getHum()
+            if hum then hum.WalkSpeed = on and Config.WalkSpeed or Defaults.WalkSpeed end
+        end
+
+        local function setJumpPower(v)
+            Config.JumpPower = v
+            local hum = getHum()
+            if hum then hum.UseJumpPower = true hum.JumpPower = v end
+        end
+
+        UserInputService.JumpRequest:Connect(function()
+            if not State.InfJump then return end
+            local hum = getHum()
+            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+
+        --==============================================================
+        --  功能：透视
+        --==============================================================
+        local highlights = {}
+
+        local function clearHighlight(plr)
+            local h = highlights[plr]
+            if h then h:Destroy() end
+            highlights[plr] = nil
+        end
+
+        local function applyHighlight(plr)
+            clearHighlight(plr)
+            local char = plr.Character
+            if not char then return end
+            highlights[plr] = new("Highlight", {
+                Name = "HackXRay",
+                Adornee = char,
+                FillColor = Theme.Accent,
+                OutlineColor = Theme.Accent,
+                FillTransparency = 0.72,
+                OutlineTransparency = 0.1,
+                DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
+                Parent = char,
+            })
+        end
+
+        local function refreshXRay()
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= LP then
+                    if State.XRay then applyHighlight(plr) else clearHighlight(plr) end
+                end
+            end
+        end
+
+        local function setXRay(on)
+            State.XRay = on
+            if not on then
+                for plr in pairs(highlights) do clearHighlight(plr) end
+            end
+            refreshXRay()
+        end
+
+        --==============================================================
+        --  功能：光照
+        --==============================================================
+        local lightingBackup = {}
+
+        local function setFullbright(on)
+            State.Fullbright = on
+            if on then
+                if lightingBackup.Ambient == nil then
+                    lightingBackup.Ambient        = Lighting.Ambient
+                    lightingBackup.OutdoorAmbient = Lighting.OutdoorAmbient
+                    lightingBackup.Brightness     = Lighting.Brightness
+                    lightingBackup.ClockTime      = Lighting.ClockTime
+                    lightingBackup.GlobalShadows  = Lighting.GlobalShadows
+                end
+                Lighting.Ambient        = Color3.fromRGB(178, 178, 178)
+                Lighting.OutdoorAmbient = Color3.fromRGB(178, 178, 178)
+                Lighting.Brightness     = 2
+                Lighting.ClockTime      = 14
+                Lighting.GlobalShadows  = false
+            else
+                if lightingBackup.Ambient ~= nil then
+                    Lighting.Ambient        = lightingBackup.Ambient
+                    Lighting.OutdoorAmbient = lightingBackup.OutdoorAmbient
+                    Lighting.Brightness     = lightingBackup.Brightness
+                    Lighting.ClockTime      = lightingBackup.ClockTime
+                    Lighting.GlobalShadows  = lightingBackup.GlobalShadows
+                end
+            end
+        end
+
+        local fogBackup = nil
+
+        local function setNoFog(on)
+            State.NoFog = on
+            if on then
+                if not fogBackup then
+                    fogBackup = {
+                        FogEnd = Lighting.FogEnd,
+                        FogStart = Lighting.FogStart,
+                        FogColor = Lighting.FogColor,
+                    }
+                end
+                Lighting.FogEnd = 100000
+                Lighting.FogStart = 100000
+            else
+                if fogBackup then
+                    Lighting.FogEnd   = fogBackup.FogEnd
+                    Lighting.FogStart = fogBackup.FogStart
+                    Lighting.FogColor = fogBackup.FogColor
+                    fogBackup = nil
+                end
+            end
+        end
+
+        local nightVisEffect = nil
+
+        local function setNightVision(on)
+            State.NightVis = on
+            if on then
+                if not nightVisEffect then
+                    nightVisEffect = new("ColorCorrectionEffect", {
+                        Name = "HackNightVision",
+                        Brightness = 0.12,
+                        Contrast = 0.22,
+                        Saturation = -0.35,
+                        TintColor = Color3.fromRGB(140, 255, 190),
+                        Parent = Lighting,
+                    })
+                end
+            else
+                if nightVisEffect then
+                    nightVisEffect:Destroy()
+                    nightVisEffect = nil
+                end
+            end
+        end
+
+        --==============================================================
+        --  GUI 根
+        --==============================================================
+        local gui = new("ScreenGui", {
+            Name = "HackSimTerminal",
+            ResetOnSpawn = false,
+            IgnoreGuiInset = true,
+            ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+            DisplayOrder = 100,
+            Parent = LP:WaitForChild("PlayerGui"),
+        })
+
+        --==============================================================
+        --  主面板
+        --==============================================================
+        local panel = new("Frame", {
+            Name = "Panel",
+            Size = UDim2.fromOffset(580, 420),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = Theme.Bg,
+            BorderSizePixel = 0,
+            ClipsDescendants = true,
+            Parent = gui,
+        })
+        radius(panel, 16)
+        outline(panel, Theme.Border, 1, 0.35)
+        gradient(panel, Color3.fromRGB(16, 19, 26), Color3.fromRGB(9, 11, 15), 90)
+
+        -- 自适应缩放（手机）
+        local uiScale = new("UIScale", { Scale = 1, Parent = panel })
+
+        local function updateScale()
+            local vp = Camera.ViewportSize
+            local sx = (vp.X - 40) / 580
+            local sy = (vp.Y - 60) / 420
+            uiScale.Scale = math.clamp(math.min(sx, sy), 0.55, 1)
+        end
+
+        updateScale()
+        Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
+
+        -- 头部
+        local header = new("Frame", {
+            Name = "Header",
+            Size = UDim2.new(1, 0, 0, 52),
+            BackgroundTransparency = 1,
+            Parent = panel,
+        })
+
+        new("Frame", {
+            Size = UDim2.new(1, -24, 0, 1),
+            Position = UDim2.new(0, 12, 1, -1),
+            BackgroundColor3 = Theme.Border,
+            BackgroundTransparency = 0.5,
+            BorderSizePixel = 0,
+            Parent = header,
+        })
+
+        local logoDot = new("Frame", {
+            Size = UDim2.fromOffset(28, 28),
+            Position = UDim2.new(0, 16, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = Theme.AccentDeep,
+            BorderSizePixel = 0,
+            Parent = header,
+        })
+        radius(logoDot, 8)
+
+        new("TextLabel", {
+            Size = UDim2.fromScale(1, 1),
+            BackgroundTransparency = 1,
+            Text = "◈",
+            TextColor3 = Color3.fromRGB(4, 16, 12),
+            Font = Theme.FontBold,
+            TextSize = 16,
+            Parent = logoDot,
+        })
+
+        new("TextLabel", {
+            Size = UDim2.new(0, 320, 0, 18),
+            Position = UDim2.new(0, 56, 0, 11),
+            BackgroundTransparency = 1,
+            Text = "黑客模拟器",
+            TextColor3 = Theme.Text,
+            Font = Theme.FontBold,
+            TextSize = 15,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = header,
+        })
+
+        new("TextLabel", {
+            Size = UDim2.new(0, 320, 0, 14),
+            Position = UDim2.new(0, 56, 0, 29),
+            BackgroundTransparency = 1,
+            Text = "辅助终端 v2.1 · " .. (IS_TOUCH and "触屏模式" or "桌面模式"),
+            TextColor3 = Theme.TextMute,
+            Font = Theme.Font,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = header,
+        })
+
+        -- 头部按钮
+        local function makeHeaderButton(text, xOffset, onClick)
+            local btn = new("TextButton", {
+                Size = UDim2.fromOffset(IS_TOUCH and 38 or 30, IS_TOUCH and 38 or 30),
+                Position = UDim2.new(1, xOffset, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5),
+                BackgroundColor3 = Theme.Surface,
+                BackgroundTransparency = 0.4,
+                BorderSizePixel = 0,
+                Text = text,
+                TextColor3 = Theme.TextDim,
+                Font = Theme.FontBold,
+                TextSize = IS_TOUCH and 16 or 14,
+                AutoButtonColor = false,
+                Parent = header,
+            })
+            radius(btn, 8)
+
+            btn.MouseEnter:Connect(function()
+                tween(btn, 0.15, { BackgroundTransparency = 0, TextColor3 = Theme.Text })
+            end)
+            btn.MouseLeave:Connect(function()
+                tween(btn, 0.15, { BackgroundTransparency = 0.4, TextColor3 = Theme.TextDim })
+            end)
+            btn.MouseButton1Click:Connect(onClick)
+            return btn
+        end
+
+        local floatingBtn
+
+        local function setPanelVisible(v)
+            panel.Visible = v
+            if floatingBtn and not IS_DESKTOP then
+                floatingBtn.Visible = not v
+            end
+        end
+
+        makeHeaderButton("—", -22 - (IS_TOUCH and 44 or 34), function()
+            setPanelVisible(false)
+        end)
+
+        makeHeaderButton("✕", -20, function()
+            setPanelVisible(false)
+        end)
+
+        -- 侧边栏
+        local sidebar = new("Frame", {
+            Name = "Sidebar",
+            Size = UDim2.new(0, 132, 1, -94),
+            Position = UDim2.new(0, 14, 0, 62),
+            BackgroundTransparency = 1,
+            Parent = panel,
+        })
+
+        new("UIListLayout", {
+            Padding = UDim.new(0, 4),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Parent = sidebar,
+        })
+
+        new("Frame", {
+            Size = UDim2.new(0, 1, 1, 0),
+            Position = UDim2.new(1, 4, 0, 0),
+            BackgroundColor3 = Theme.Border,
+            BackgroundTransparency = 0.55,
+            BorderSizePixel = 0,
+            Parent = sidebar,
+        })
+
+        -- 内容区
+        local contentArea = new("Frame", {
+            Name = "Content",
+            Size = UDim2.new(1, -174, 1, -94),
+            Position = UDim2.new(0, 160, 0, 62),
+            BackgroundTransparency = 1,
+            Parent = panel,
+        })
+
+        -- 状态栏
+        local statusBar = new("Frame", {
+            Size = UDim2.new(1, 0, 0, 32),
+            Position = UDim2.new(0, 0, 1, -32),
+            BackgroundTransparency = 1,
+            Parent = panel,
+        })
+
+        new("Frame", {
+            Size = UDim2.new(1, -24, 0, 1),
+            Position = UDim2.new(0, 12, 0, 0),
+            BackgroundColor3 = Theme.Border,
+            BackgroundTransparency = 0.5,
+            BorderSizePixel = 0,
+            Parent = statusBar,
+        })
+
+        local statusDot = new("Frame", {
+            Size = UDim2.fromOffset(6, 6),
+            Position = UDim2.new(0, 18, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = Theme.Accent,
+            BorderSizePixel = 0,
+            Parent = statusBar,
+        })
+        radius(statusDot, 3)
+
+        new("TextLabel", {
+            Size = UDim2.new(0, 260, 1, 0),
+            Position = UDim2.new(0, 32, 0, 0),
+            BackgroundTransparency = 1,
+            Text = IS_DESKTOP and "系统就绪 · 按 K 切换面板" or "系统就绪 · 点击悬浮按钮切换",
+            TextColor3 = Theme.TextMute,
+            Font = Theme.Font,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = statusBar,
+        })
+
+        local featureCountLbl = new("TextLabel", {
+            Size = UDim2.new(0, 200, 1, 0),
+            Position = UDim2.new(1, -16, 0, 0),
+            AnchorPoint = Vector2.new(1, 0),
+            BackgroundTransparency = 1,
+            Text = "已启用 0 项",
+            TextColor3 = Theme.TextMute,
+            Font = Theme.Font,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Parent = statusBar,
+        })
+
+        --==============================================================
+        --  面板拖动
+        --==============================================================
+        local pDragging = false
+        local pStart, pOrigin
+
+        local function handleDragBegan(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+                pDragging = true
+                pStart = input.Position
+                pOrigin = panel.Position
+            end
+        end
+
+        local function handleDragChanged(input)
+            if not pDragging then return end
+            if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+                local d = input.Position - pStart
+                panel.Position = UDim2.new(
+                    pOrigin.X.Scale, pOrigin.X.Offset + d.X,
+                    pOrigin.Y.Scale, pOrigin.Y.Offset + d.Y
+                )
+            end
+        end
+
+        local function handleDragEnded(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+                pDragging = false
+            end
+        end
+
+        header.InputBegan:Connect(handleDragBegan)
+        UserInputService.InputChanged:Connect(handleDragChanged)
+        UserInputService.InputEnded:Connect(handleDragEnded)
+
+        --==============================================================
+        --  组件：滚动框 / 行 / 开关 / 滑块
+        --==============================================================
+        local function makeScrollFrame()
+            local sf = new("ScrollingFrame", {
+                Size = UDim2.fromScale(1, 1),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScrollBarThickness = IS_TOUCH and 6 or 3,
+                ScrollBarImageColor3 = Theme.Border,
+                ScrollBarImageTransparency = 0.2,
+                CanvasSize = UDim2.new(),
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                ScrollingDirection = Enum.ScrollingDirection.Y,
+                Visible = false,
+                Parent = contentArea,
+            })
+            new("UIListLayout", {
+                Padding = UDim.new(0, 6),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Parent = sf,
+            })
+            new("UIPadding", {
+                PaddingTop = UDim.new(0, 2),
+                PaddingLeft = UDim.new(0, 2),
+                PaddingRight = UDim.new(0, 14),
+                PaddingBottom = UDim.new(0, 12),
+                Parent = sf,
+            })
+            return sf
+        end
+
+        local ROW_HEIGHT = IS_TOUCH and 62 or 52
+
+        local function createBaseRow(parent, order, height)
+            local row = new("Frame", {
+                Size = UDim2.new(1, 0, 0, height or ROW_HEIGHT),
+                BackgroundColor3 = Theme.Surface,
+                BackgroundTransparency = 0.4,
+                BorderSizePixel = 0,
+                Active = true,
+                LayoutOrder = order,
+                Parent = parent,
+            })
+            radius(row, 10)
+            row.MouseEnter:Connect(function()
+                tween(row, 0.15, { BackgroundTransparency = 0.15 })
+            end)
+            row.MouseLeave:Connect(function()
+                tween(row, 0.15, { BackgroundTransparency = 0.4 })
+            end)
+            return row
+        end
+
+        local function addToggleRow(parent, order, title, desc, default, onChange)
+            local row = createBaseRow(parent, order, ROW_HEIGHT)
+
+            new("TextLabel", {
+                Size = UDim2.new(1, -100, 0, 16),
+                Position = UDim2.new(0, 14, 0, 10),
+                BackgroundTransparency = 1,
+                Text = title,
+                TextColor3 = Theme.Text,
+                Font = Theme.FontBold,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = row,
+            })
+
+            new("TextLabel", {
+                Size = UDim2.new(1, -100, 0, 14),
+                Position = UDim2.new(0, 14, 0, 28),
+                BackgroundTransparency = 1,
+                Text = desc or "",
+                TextColor3 = Theme.TextMute,
+                Font = Theme.Font,
+                TextSize = 11,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Parent = row,
+            })
+
+            local trackSize = IS_TOUCH and 52 or 42
+            local knobSize  = IS_TOUCH and 22 or 18
+
+            local track = new("Frame", {
+                Size = UDim2.fromOffset(trackSize, IS_TOUCH and 30 or 24),
+                Position = UDim2.new(1, -14, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5),
+                BackgroundColor3 = Theme.Border,
+                BorderSizePixel = 0,
+                Parent = row,
+            })
+            radius(track, trackSize / 2)
+
+            local knob = new("Frame", {
+                Size = UDim2.fromOffset(knobSize, knobSize),
+                Position = UDim2.new(0, 3, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = Theme.TextDim,
+                BorderSizePixel = 0,
+                Parent = track,
+            })
+            radius(knob, knobSize / 2)
+
+            local hit = new("TextButton", {
+                Size = UDim2.fromScale(1, 1),
+                BackgroundTransparency = 1,
+                Text = "",
+                Parent = track,
+            })
+
+            local isOn = not not default
+
+            local function render(animate)
+                local info = animate
+                    and TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+                    or  TweenInfo.new(0)
+                if isOn then
+                    TweenService:Create(track, info, { BackgroundColor3 = Theme.AccentDeep }):Play()
+                    TweenService:Create(knob, info, {
+                        Position = UDim2.new(1, -(knobSize + 3), 0.5, 0),
+                        BackgroundColor3 = Theme.Accent,
+                    }):Play()
+                else
+                    TweenService:Create(track, info, { BackgroundColor3 = Theme.Border }):Play()
+                    TweenService:Create(knob, info, {
+                        Position = UDim2.new(0, 3, 0.5, 0),
+                        BackgroundColor3 = Theme.TextDim,
+                    }):Play()
+                end
+            end
+
+            render(false)
+
+            hit.MouseButton1Click:Connect(function()
+                isOn = not isOn
+                render(true)
+                if onChange then pcall(onChange, isOn) end
+            end)
+
+            return {
+                Get = function() return isOn end,
+                Set = function(v)
+                    if isOn == v then return end
+                    isOn = v
+                    render(true)
+                end,
+            }
+        end
+
+        local function addSliderRow(parent, order, title, min, max, default, suffix, onChange)
+            local row = createBaseRow(parent, order, IS_TOUCH and 72 or 58)
+
+            new("TextLabel", {
+                Size = UDim2.new(1, -110, 0, 16),
+                Position = UDim2.new(0, 14, 0, 9),
+                BackgroundTransparency = 1,
+                Text = title,
+                TextColor3 = Theme.Text,
+                Font = Theme.FontBold,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = row,
+            })
+
+            local valueLbl = new("TextLabel", {
+                Size = UDim2.fromOffset(90, 16),
+                Position = UDim2.new(1, -14, 0, 9),
+                AnchorPoint = Vector2.new(1, 0),
+                BackgroundTransparency = 1,
+                Text = "",
+                TextColor3 = Theme.Accent,
+                Font = Theme.FontBold,
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                Parent = row,
+            })
+
+            local track = new("Frame", {
+                Size = UDim2.new(1, -28, 0, IS_TOUCH and 8 or 4),
+                Position = UDim2.new(0, 14, 0, IS_TOUCH and 48 or 38),
+                BackgroundColor3 = Theme.Border,
+                BorderSizePixel = 0,
+                Parent = row,
+            })
+            radius(track, 4)
+
+            local fill = new("Frame", {
+                Size = UDim2.fromScale(0, 1),
+                BackgroundColor3 = Theme.Accent,
+                BorderSizePixel = 0,
+                Parent = track,
+            })
+            radius(fill, 4)
+            gradient(fill, Theme.AccentBlue, Theme.Accent, 0)
+
+            local knobSize = IS_TOUCH and 22 or 14
+
+            local knob = new("Frame", {
+                Size = UDim2.fromOffset(knobSize, knobSize),
+                Position = UDim2.new(0, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                BackgroundColor3 = Color3.fromRGB(240, 248, 255),
+                BorderSizePixel = 0,
+                Parent = track,
+            })
+            radius(knob, knobSize / 2)
+            outline(knob, Theme.Accent, 2, 0.35)
+
+            -- 触摸热区：覆盖整行下半部分
+            local hit = new("TextButton", {
+                Size = UDim2.new(1, 0, 0, IS_TOUCH and 36 or 26),
+                Position = UDim2.new(0, 0, 1, 0),
+                AnchorPoint = Vector2.new(0, 1),
+                BackgroundTransparency = 1,
+                Text = "",
+                Parent = row,
+            })
+
+            local value = default
+            local dragging = false
+
+            local function render()
+                local s = (max > min) and ((value - min) / (max - min)) or 0
+                s = math.clamp(s, 0, 1)
+                fill.Size = UDim2.fromScale(s, 1)
+                knob.Position = UDim2.new(s, 0, 0.5, 0)
+                valueLbl.Text = tostring(value) .. (suffix or "")
+            end
+
+            local function applyFromX(x)
+                local absX = track.AbsolutePosition.X
+                local w = track.AbsoluteSize.X
+                if w <= 0 then return end
+                local rel = math.clamp((x - absX) / w, 0, 1)
+                local nv = math.clamp(math.floor(min + (max - min) * rel + 0.5), min, max)
+                if nv ~= value then
+                    value = nv
+                    render()
+                    if onChange then onChange(value) end
+                end
+            end
+
+            hit.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                    applyFromX(input.Position.X)
+                end
+            end)
+
+            UserInputService.InputChanged:Connect(function(input)
+                if not dragging then return end
+                if input.UserInputType == Enum.UserInputType.MouseMovement
+                or input.UserInputType == Enum.UserInputType.Touch then
+                    applyFromX(input.Position.X)
+                end
+            end)
+
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1
+                or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
+                end
+            end)
+
+            render()
+
+            return {
+                Get = function() return value end,
+                Set = function(v)
+                    value = math.clamp(math.floor(v + 0.5), min, max)
+                    render()
+                end,
+            }
+        end
+
+        --==============================================================
+        --  标签页
+        --==============================================================
+        local tabs = {}
+        local currentTab = nil
+
+        local function setTabActive(btn, dot, lbl, active)
+            local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            TweenService:Create(btn, info, { BackgroundTransparency = active and 0.88 or 1 }):Play()
+            TweenService:Create(dot, info, {
+                BackgroundColor3 = active and Theme.Accent or Theme.TextMute,
+                Size = active and UDim2.fromOffset(8, 8) or UDim2.fromOffset(6, 6),
+            }):Play()
+            TweenService:Create(lbl, info, { TextColor3 = active and Theme.Text or Theme.TextDim }):Play()
+        end
+
+        local rebuildPlayerList
+
+        local function selectTab(key)
+            if currentTab == key then return end
+            currentTab = key
+            for k, t in pairs(tabs) do
+                local active = (k == key)
+                t.frame.Visible = active
+                setTabActive(t.btn, t.dot, t.lbl, active)
+            end
+            if key == "players" and rebuildPlayerList then rebuildPlayerList() end
+        end
+
+        local function registerTab(key, label, order)
+            local sf = makeScrollFrame()
+
+            local btn = new("TextButton", {
+                Size = UDim2.new(1, 0, 0, IS_TOUCH and 44 or 38),
+                BackgroundColor3 = Theme.Accent,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                Text = "",
+                AutoButtonColor = false,
+                LayoutOrder = order,
+                Parent = sidebar,
+            })
+            radius(btn, 9)
+
+            local dot = new("Frame", {
+                Size = UDim2.fromOffset(6, 6),
+                Position = UDim2.new(0, 14, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = Theme.TextMute,
+                BorderSizePixel = 0,
+                Parent = btn,
+            })
+            radius(dot, 3)
+
+            local lbl = new("TextLabel", {
+                Size = UDim2.new(1, -36, 1, 0),
+                Position = UDim2.new(0, 28, 0, 0),
+                BackgroundTransparency = 1,
+                Text = label,
+                TextColor3 = Theme.TextDim,
+                Font = Theme.FontMed,
+                TextSize = 13,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Parent = btn,
+            })
+
+            btn.MouseEnter:Connect(function()
+                if currentTab ~= key then tween(btn, 0.15, { BackgroundTransparency = 0.94 }) end
+            end)
+            btn.MouseLeave:Connect(function()
+                if currentTab ~= key then tween(btn, 0.15, { BackgroundTransparency = 1 }) end
+            end)
+            btn.MouseButton1Click:Connect(function() selectTab(key) end)
+
+            tabs[key] = { frame = sf, btn = btn, dot = dot, lbl = lbl }
+            return sf
+        end
+
+        --==============================================================
+        --  填充：移动
+        --==============================================================
+        local moveTab = registerTab("move", "移动", 1)
+
+        addToggleRow(moveTab, 1, "飞行", IS_TOUCH and "触屏摇杆 + ▲▼ 控制" or "空格上升 / Shift 下降",
+            State.Fly, function(on) setFly(on) updateMobileControls() end)
+
+        addSliderRow(moveTab, 2, "飞行速度", 10, 300, Config.FlySpeed, "", function(v)
+            Config.FlySpeed = v
+        end)
+
+        addToggleRow(moveTab, 3, "穿墙", "关闭碰撞 · 可穿过地形", State.Ghost,
+            function(on) setGhost(on) updateMobileControls() end)
+
+        addSliderRow(moveTab, 4, "悬浮高度", 1, 20, Config.GhostHeight, "", function(v)
+            Config.GhostHeight = v
+        end)
+
+        addToggleRow(moveTab, 5, "加速", "提升角色行走速度", State.SpeedUp, function(on) setSpeedUp(on) end)
+
+        addSliderRow(moveTab, 6, "行走速度", 16, 300, Config.WalkSpeed, "", function(v)
+            Config.WalkSpeed = v
+            if State.SpeedUp then
+                local hum = getHum()
+                if hum then hum.WalkSpeed = v end
+            end
+        end)
+
+        addToggleRow(moveTab, 7, "无限跳跃", "空中也可再次起跳", State.InfJump,
+            function(on) State.InfJump = on end)
+
+        addSliderRow(moveTab, 8, "跳跃高度", 50, 300, Config.JumpPower, "", function(v)
+            setJumpPower(v)
+        end)
+
+        --==============================================================
+        --  填充：视觉
+        --==============================================================
+        local visualTab = registerTab("visual", "视觉", 2)
+
+        addToggleRow(visualTab, 1, "透视高亮", "让其他玩家穿透显示", State.XRay,
+            function(on) setXRay(on) end)
+        addToggleRow(visualTab, 2, "全亮模式", "提升环境光照亮度", State.Fullbright,
+            function(on) setFullbright(on) end)
+        addToggleRow(visualTab, 3, "移除雾气", "消除场景中的雾效", State.NoFog,
+            function(on) setNoFog(on) end)
+        addToggleRow(visualTab, 4, "夜视仪", "暗处也能看清周围", State.NightVis,
+            function(on) setNightVision(on) end)
+
+        --==============================================================
+        --  填充：玩家
+        --==============================================================
+        local playerTab = registerTab("players", "玩家", 3)
+
+        rebuildPlayerList = function()
+            for _, c in ipairs(playerTab:GetChildren()) do
+                if c:IsA("GuiObject") then c:Destroy() end
+            end
+
+            local list = {}
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LP then table.insert(list, p) end
+            end
+
+            new("TextLabel", {
+                Size = UDim2.new(1, 0, 0, 22),
+                BackgroundTransparency = 1,
+                Text = "在线玩家 · " .. #list,
+                TextColor3 = Theme.TextMute,
+                Font = Theme.FontBold,
+                TextSize = 11,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                LayoutOrder = 1,
+                Parent = playerTab,
+            })
+
+            if #list == 0 then
+                new("TextLabel", {
+                    Size = UDim2.new(1, 0, 0, 44),
+                    BackgroundTransparency = 1,
+                    Text = "暂无其他玩家",
+                    TextColor3 = Theme.TextMute,
+                    Font = Theme.Font,
+                    TextSize = 12,
+                    LayoutOrder = 2,
+                    Parent = playerTab,
+                })
+                return
+            end
+
+            for i, p in ipairs(list) do
+                local row = createBaseRow(playerTab, i + 1, IS_TOUCH and 54 or 46)
+
+                local dot = new("Frame", {
+                    Size = UDim2.fromOffset(6, 6),
+                    Position = UDim2.new(0, 14, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundColor3 = Theme.Accent,
+                    BorderSizePixel = 0,
+                    Parent = row,
+                })
+                radius(dot, 3)
+
+                new("TextLabel", {
+                    Size = UDim2.new(1, -140, 1, 0),
+                    Position = UDim2.new(0, 30, 0, 0),
+                    BackgroundTransparency = 1,
+                    Text = p.DisplayName .. "  @" .. p.Name,
+                    TextColor3 = Theme.Text,
+                    Font = Theme.FontMed,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    Parent = row,
+                })
+
+                local tp = new("TextButton", {
+                    Size = UDim2.fromOffset(IS_TOUCH and 76 or 62, IS_TOUCH and 34 or 26),
+                    Position = UDim2.new(1, -14, 0.5, 0),
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    BackgroundColor3 = Theme.AccentDeep,
+                    BackgroundTransparency = 0.35,
+                    BorderSizePixel = 0,
+                    Text = "传送",
+                    TextColor3 = Theme.Accent,
+                    Font = Theme.FontBold,
+                    TextSize = 11,
+                    AutoButtonColor = false,
+                    Parent = row,
+                })
+                radius(tp, 7)
+
+                tp.MouseEnter:Connect(function() tween(tp, 0.15, { BackgroundTransparency = 0 }) end)
+                tp.MouseLeave:Connect(function() tween(tp, 0.15, { BackgroundTransparency = 0.35 }) end)
+
+                tp.MouseButton1Click:Connect(function()
+                    local myRoot = getRoot()
+                    local tChar = p.Character
+                    local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+                    if myRoot and tRoot then
+                        myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 4)
+                    end
+                end)
+            end
+        end
+
+        Players.PlayerAdded:Connect(function()
+            task.wait(0.5)
+            if rebuildPlayerList then rebuildPlayerList() end
+        end)
+        Players.PlayerRemoving:Connect(function()
+            task.wait(0.1)
+            if rebuildPlayerList then rebuildPlayerList() end
+        end)
+
+        --==============================================================
+        --  填充：设置
+        --==============================================================
+        local settingsTab = registerTab("settings", "设置", 4)
+
+        local closeAllRow = createBaseRow(settingsTab, 1, ROW_HEIGHT)
+
+        new("TextLabel", {
+            Size = UDim2.new(1, -120, 0, 16),
+            Position = UDim2.new(0, 14, 0, 10),
+            BackgroundTransparency = 1,
+            Text = "一键关闭全部",
+            TextColor3 = Theme.Text,
+            Font = Theme.FontBold,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = closeAllRow,
+        })
+
+        new("TextLabel", {
+            Size = UDim2.new(1, -120, 0, 14),
+            Position = UDim2.new(0, 14, 0, 28),
+            BackgroundTransparency = 1,
+            Text = "重置所有模拟功能到初始状态",
+            TextColor3 = Theme.TextMute,
+            Font = Theme.Font,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = closeAllRow,
+        })
+
+        local closeAllBtn = new("TextButton", {
+            Size = UDim2.fromOffset(IS_TOUCH and 84 or 70, IS_TOUCH and 36 or 26),
+            Position = UDim2.new(1, -14, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundColor3 = Color3.fromRGB(60, 26, 32),
+            BorderSizePixel = 0,
+            Text = "重置",
+            TextColor3 = Theme.Danger,
+            Font = Theme.FontBold,
+            TextSize = 11,
+            AutoButtonColor = false,
+            Parent = closeAllRow,
+        })
+        radius(closeAllBtn, 7)
+
+        closeAllBtn.MouseButton1Click:Connect(function()
+            if State.Fly        then setFly(false)         end
+            if State.Ghost      then setGhost(false)       end
+            if State.SpeedUp    then setSpeedUp(false)     end
+            if State.XRay       then setXRay(false)        end
+            if State.Fullbright then setFullbright(false)  end
+            if State.NoFog      then setNoFog(false)       end
+            if State.NightVis   then setNightVision(false) end
+            State.InfJump = false
+            updateMobileControls()
+        end)
+
+        -- 关于
+        local aboutRow = createBaseRow(settingsTab, 2, IS_TOUCH and 86 or 72)
+
+        new("TextLabel", {
+            Size = UDim2.new(1, -28, 0, 16),
+            Position = UDim2.new(0, 14, 0, 12),
+            BackgroundTransparency = 1,
+            Text = "辅助终端 v2.1",
+            TextColor3 = Theme.Text,
+            Font = Theme.FontBold,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = aboutRow,
+        })
+
+        new("TextLabel", {
+            Size = UDim2.new(1, -28, 0, 46),
+            Position = UDim2.new(0, 14, 0, 32),
+            BackgroundTransparency = 1,
+            Text = "支持 PC + 手机全平台。手机开启飞行/穿墙后，\n左下角自动显示虚拟摇杆，飞行时右侧出现升降按钮。",
+            TextColor3 = Theme.TextMute,
+            Font = Theme.Font,
+            TextSize = 11,
+            TextWrapped = true,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Top,
+            Parent = aboutRow,
+        })
+
+        selectTab("move")
+
+        --==============================================================
+        --  手机虚拟摇杆
+        --==============================================================
+        local joystickFrame, joystickKnob, upBtn, downBtn
+
+        local function createMobileJoystick()
+            if not IS_TOUCH then return end
+
+            local JS_SIZE  = 138
+            local KNOB_SZ  = 58
+            local MAX_R    = JS_SIZE / 2 - KNOB_SZ / 2 - 4
+
+            joystickFrame = new("Frame", {
+                Name = "VirtualStick",
+                Size = UDim2.fromOffset(JS_SIZE, JS_SIZE),
+                Position = UDim2.new(0, 40, 1, -190),
+                AnchorPoint = Vector2.new(0, 1),
+                BackgroundColor3 = Theme.Bg,
+                BackgroundTransparency = 0.35,
+                BorderSizePixel = 0,
+                Visible = false,
+                Active = true,
+                Parent = gui,
+            })
+            radius(joystickFrame, JS_SIZE / 2)
+            outline(joystickFrame, Theme.Accent, 2, 0.45)
+
+            -- 十字提示
+            new("Frame", {
+                Size = UDim2.fromOffset(2, 28),
+                Position = UDim2.new(0.5, -1, 0, 14),
+                BackgroundColor3 = Theme.Border,
+                BackgroundTransparency = 0.3,
+                BorderSizePixel = 0,
+                Parent = joystickFrame,
+            })
+            new("Frame", {
+                Size = UDim2.fromOffset(28, 2),
+                Position = UDim2.new(0, 14, 0.5, -1),
+                BackgroundColor3 = Theme.Border,
+                BackgroundTransparency = 0.3,
+                BorderSizePixel = 0,
+                Parent = joystickFrame,
+            })
+
+            joystickKnob = new("Frame", {
+                Size = UDim2.fromOffset(KNOB_SZ, KNOB_SZ),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                BackgroundColor3 = Theme.Accent,
+                BackgroundTransparency = 0.15,
+                BorderSizePixel = 0,
+                Parent = joystickFrame,
+            })
+            radius(joystickKnob, KNOB_SZ / 2)
+            outline(joystickKnob, Color3.fromRGB(255, 255, 255), 2, 0.5)
+
+            -- 上升 / 下降按钮
+            local function makeVertBtn(symbol, yOffset)
+                local b = new("TextButton", {
+                    Size = UDim2.fromOffset(66, 66),
+                    Position = UDim2.new(0, 200, 1, yOffset),
+                    AnchorPoint = Vector2.new(0, 1),
+                    BackgroundColor3 = Theme.Bg,
+                    BackgroundTransparency = 0.2,
+                    BorderSizePixel = 0,
+                    Text = symbol,
+                    TextColor3 = Theme.Accent,
+                    Font = Theme.FontBold,
+                    TextSize = 22,
+                    AutoButtonColor = false,
+                    Visible = false,
+                    Parent = gui,
+                })
+                radius(b, 33)
+                outline(b, Theme.Accent, 2, 0.4)
+                return b
+            end
+
+            upBtn   = makeVertBtn("▲", -118)
+            downBtn = makeVertBtn("▼", -44)
+
+            -- 摇杆输入
+            joystickFrame.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.active = true
+                    -- 立即按触摸位置更新
+                    local center = joystickFrame.AbsolutePosition + joystickFrame.AbsoluteSize / 2
+                    local d = Vector2.new(input.Position.X - center.X, input.Position.Y - center.Y)
+                    if d.Magnitude > MAX_R then d = d.Unit * MAX_R end
+                    joystickKnob.Position = UDim2.new(0.5, d.X, 0.5, d.Y)
+                    Stick.dirX = d.X / MAX_R
+                    Stick.dirY = d.Y / MAX_R
+                end
+            end)
+
+            UserInputService.InputChanged:Connect(function(input)
+                if not Stick.active then return end
+                if input.UserInputType ~= Enum.UserInputType.Touch
+                and input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+
+                local center = joystickFrame.AbsolutePosition + joystickFrame.AbsoluteSize / 2
+                local d = Vector2.new(input.Position.X - center.X, input.Position.Y - center.Y)
+                if d.Magnitude > MAX_R then d = d.Unit * MAX_R end
+
+                joystickKnob.Position = UDim2.new(0.5, d.X, 0.5, d.Y)
+                Stick.dirX = d.X / MAX_R
+                Stick.dirY = d.Y / MAX_R
+            end)
+
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.active = false
+                    Stick.dirX = 0
+                    Stick.dirY = 0
+                    tween(joystickKnob, 0.15, { Position = UDim2.new(0.5, 0, 0.5, 0) })
+                end
+            end)
+
+            -- 升降按钮输入
+            upBtn.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.up = true
+                    tween(upBtn, 0.1, { BackgroundTransparency = 0 })
+                end
+            end)
+            upBtn.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.up = false
+                    tween(upBtn, 0.1, { BackgroundTransparency = 0.2 })
+                end
+            end)
+
+            downBtn.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.down = true
+                    tween(downBtn, 0.1, { BackgroundTransparency = 0 })
+                end
+            end)
+            downBtn.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch
+                or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    Stick.down = false
+                    tween(downBtn, 0.1, { BackgroundTransparency = 0.2 })
+                end
+            end)
+        end
+
+        createMobileJoystick()
+
+        -- 根据状态控制手机控件可见性
+        function updateMobileControls()
+            if not IS_TOUCH then return end
+            if not joystickFrame then return end
+
+            local show = State.Fly or State.Ghost
+            joystickFrame.Visible = show
+            if upBtn   then upBtn.Visible   = show and State.Fly end
+            if downBtn then downBtn.Visible = show and State.Fly end
+
+            if not show then
+                Stick.active = false
+                Stick.dirX = 0
+                Stick.dirY = 0
+                Stick.up = false
+                Stick.down = false
+                if joystickKnob then
+                    joystickKnob.Position = UDim2.new(0.5, 0, 0.5, 0)
+                end
+            end
+        end
+
+        --==============================================================
+        --  悬浮按钮（手机/桌面均可）
+        --==============================================================
+        floatingBtn = new("TextButton", {
+            Size = UDim2.fromOffset(IS_TOUCH and 56 or 46, IS_TOUCH and 56 or 46),
+            Position = UDim2.new(1, -80, 0.35, 0),
+            BackgroundColor3 = Theme.Bg,
+            BackgroundTransparency = 0.1,
+            BorderSizePixel = 0,
+            Text = "◈",
+            TextColor3 = Theme.Accent,
+            Font = Theme.FontBold,
+            TextSize = IS_TOUCH and 24 or 20,
+            AutoButtonColor = false,
+            Visible = false,
+            Parent = gui,
+        })
+        radius(floatingBtn, IS_TOUCH and 28 or 23)
+        outline(floatingBtn, Theme.Accent, 2, 0.45)
+
+        local fbDragging, fbMoved = false, false
+        local fbStart, fbOrigin
+
+        floatingBtn.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+                fbDragging = true
+                fbMoved = false
+                fbStart = input.Position
+                fbOrigin = floatingBtn.Position
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if not fbDragging then return end
+            if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+                local d = input.Position - fbStart
+                if math.abs(d.X) > 6 or math.abs(d.Y) > 6 then fbMoved = true end
+                floatingBtn.Position = UDim2.new(
+                    fbOrigin.X.Scale, fbOrigin.X.Offset + d.X,
+                    fbOrigin.Y.Scale, fbOrigin.Y.Offset + d.Y
+                )
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+                fbDragging = false
+            end
+        end)
+
+        floatingBtn.MouseButton1Click:Connect(function()
+            if fbMoved then return end
+            setPanelVisible(true)
+        end)
+
+        -- 手机默认显示悬浮按钮
+        if IS_TOUCH then
+            floatingBtn.Visible = true
+        end
+
+        --==============================================================
+        --  键盘快捷键（PC）
+        --==============================================================
+        UserInputService.InputBegan:Connect(function(input, processed)
+            if processed then return end
+            if not IS_DESKTOP then return end
+            if input.KeyCode == Enum.KeyCode.K then
+                setPanelVisible(not panel.Visible)
+            end
+        end)
+
+        --==============================================================
+        --  每帧更新
+        --==============================================================
+        local lastCount = -1
+
+        local function countEnabled()
+            local n = 0
+            for _, v in pairs(State) do if v == true then n += 1 end end
+            return n
+        end
+
+        RunService.Heartbeat:Connect(function()
+            if logoDot.Parent then
+                local a = (math.sin(os.clock() * 2.2) + 1) / 2
+                logoDot.BackgroundColor3 = Theme.AccentDeep:Lerp(Theme.Accent, a * 0.85)
+            end
+
+            local n = countEnabled()
+            if n ~= lastCount then
+                lastCount = n
+                featureCountLbl.Text = "已启用 " .. n .. " 项"
+                featureCountLbl.TextColor3 = n > 0 and Theme.Accent or Theme.TextMute
+            end
+
+            local root = getRoot()
+            if not root then return end
+
+            if State.Fly and flyLV and flyAO then
+                local dir = getMoveDir(true)
+                flyLV.VectorVelocity = dir.Magnitude > 0.01
+                    and dir.Unit * Config.FlySpeed
+                    or Vector3.zero
+                local flat = getFlatLook(root)
+                flyAO.CFrame = CFrame.lookAt(root.Position, root.Position + flat)
+            end
+
+            if State.Ghost and ghostLV and ghostAO then
+                local dir = getMoveDir(false)
+
+                local params = RaycastParams.new()
+                params.FilterType = Enum.RaycastFilterType.Exclude
+                params.FilterDescendantsInstances = { LP.Character }
+
+                local hit = Workspace:Raycast(root.Position, Vector3.new(0, -1000, 0), params)
+                local targetY = hit and (hit.Position.Y + Config.GhostHeight) or root.Position.Y
+                local vy = math.clamp((targetY - root.Position.Y) * 14, -120, 120)
+
+                local h = dir.Magnitude > 0.01
+                    and dir.Unit * Config.GhostSpeed
+                    or Vector3.zero
+
+                ghostLV.VectorVelocity = Vector3.new(h.X, vy, h.Z)
+                local flat = getFlatLook(root)
+                ghostAO.CFrame = CFrame.lookAt(root.Position, root.Position + flat)
+            end
+        end)
+
+        --==============================================================
+        --  透视同步
+        --==============================================================
+        Players.PlayerAdded:Connect(function(plr)
+            plr.CharacterAdded:Connect(function()
+                if not State.XRay then return end
+                task.wait(0.4)
+                applyHighlight(plr)
+            end)
+        end)
+        Players.PlayerRemoving:Connect(function(plr) clearHighlight(plr) end)
+
+        --==============================================================
+        --  重生恢复
+        --==============================================================
+        LP.CharacterAdded:Connect(function(char)
+            char:WaitForChild("Humanoid", 10)
+            char:WaitForChild("HumanoidRootPart", 10)
+            task.wait(0.3)
+
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                hum.UseJumpPower = true
+                hum.JumpPower = Config.JumpPower
+                if State.SpeedUp then hum.WalkSpeed = Config.WalkSpeed end
+            end
+
+            local wasFly   = State.Fly
+            local wasGhost = State.Ghost
+
+            if wasFly   then setFly(false)   end
+            if wasGhost then setGhost(false) end
+
+            task.wait(0.05)
+
+            if wasFly   then setFly(true)   end
+            if wasGhost then setGhost(true) end
+
+            refreshXRay()
+            updateMobileControls()
+        end)
+
+        --==============================================================
+        --  移动端安全处理：屏幕旋转时刷新缩放
+        --==============================================================
+        Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+            updateScale()
+        end)
+
+        print("[黑客模拟器] 辅助终端 v2.1 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
+
+        statusLabel.Text = "状态: 神秘脚本已启动"
+    end)
 end)
 
 -- 附身功能
@@ -547,6 +2212,7 @@ minimizeButton.MouseButton1Click:Connect(function()
         modesFrame.Visible = false
         controlsFrame.Visible = false
         crashButton.Visible = false
+        mysteryButton.Visible = false
         backgroundOverlay.Visible = false
     else
         mainFrame:TweenSize(originalSize, "Out", "Quad", 0.3)
@@ -557,6 +2223,7 @@ minimizeButton.MouseButton1Click:Connect(function()
         modesFrame.Visible = true
         controlsFrame.Visible = true
         crashButton.Visible = true
+        mysteryButton.Visible = true
         backgroundOverlay.Visible = true
     end
 end)
@@ -568,8 +2235,8 @@ Players.PlayerRemoving:Connect(updatePlayersList)
 
 -- 手机端适配
 if UserInputService.TouchEnabled then
-    mainFrame.Size = UDim2.new(0, 320, 0, 500)
-    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
+    mainFrame.Size = UDim2.new(0, 320, 0, 540)
+    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -270)
     originalSize = mainFrame.Size
     originalPosition = mainFrame.Position
     minimizedSize = UDim2.new(0, 320, 0, 45)
@@ -578,6 +2245,7 @@ if UserInputService.TouchEnabled then
     startButton.TextSize = 15
     stopButton.TextSize = 15
     crashButton.TextSize = 15
+    mysteryButton.TextSize = 15
     for _, btn in pairs(playersScrolling:GetChildren()) do
         if btn:IsA("TextButton") then
             btn.TextSize = 13
@@ -588,4 +2256,4 @@ end
 print("FE培根脚本附属恶搞 加载成功！")
 print("作者: BaconScript Team")
 print("版本: 1.2.0")
-print("功能: 7种附身模式 + 崩服")
+print("功能: 7种附身模式 + 崩服 + 神秘脚本")
