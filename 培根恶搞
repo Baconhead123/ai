@@ -1,4 +1,394 @@
--- 神秘脚本源码
+-- FE培根脚本附属恶搞
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local localPlayer = Players.LocalPlayer
+local targetPlayer = nil
+local currentMode = "骑在头上"
+local connection = nil
+local floating = false
+local floatDirection = 1
+local floatOffset = 0
+
+-- 创建UI在CoreGui中，这样角色死亡时不会消失
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FEBaconScriptUI"
+screenGui.Parent = CoreGui
+screenGui.ResetOnSpawn = false  -- 防止重生时重置
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 530)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -265)
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+-- 添加圆角效果
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = mainFrame
+
+-- 背景图片
+local background = Instance.new("ImageLabel")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.BackgroundTransparency = 1
+background.Image = "rbxassetid://89036103941643"
+background.ScaleType = Enum.ScaleType.Crop
+background.Parent = mainFrame
+
+-- 为背景也添加圆角
+local bgCorner = Instance.new("UICorner")
+bgCorner.CornerRadius = UDim.new(0, 15)
+bgCorner.Parent = background
+
+-- 添加背景遮罩
+local backgroundOverlay = Instance.new("Frame")
+backgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
+backgroundOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+backgroundOverlay.BackgroundTransparency = 0.4
+backgroundOverlay.BorderSizePixel = 0
+backgroundOverlay.Parent = mainFrame
+
+local overlayCorner = Instance.new("UICorner")
+overlayCorner.CornerRadius = UDim.new(0, 15)
+overlayCorner.Parent = backgroundOverlay
+
+-- 标题栏
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.BackgroundTransparency = 0.2
+titleBar.Parent = mainFrame
+
+-- 标题栏圆角
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 15)
+titleCorner.Parent = titleBar
+
+-- 标题
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -50, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "FE培根脚本附属恶搞"
+title.TextColor3 = Color3.fromRGB(255, 215, 0)  -- 金色
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleBar
+
+-- 培根图标
+local baconIcon = Instance.new("ImageLabel")
+baconIcon.Size = UDim2.new(0, 22, 0, 22)
+baconIcon.Position = UDim2.new(0, -28, 0.5, -11)
+baconIcon.BackgroundTransparency = 1
+baconIcon.Image = "rbxassetid://6031302931"  -- 培根图标
+baconIcon.Parent = titleBar
+
+-- 关闭按钮
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 28, 0, 28)
+closeButton.Position = UDim2.new(1, -32, 0, 6)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "×"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 20
+closeButton.Parent = titleBar
+
+-- 关闭按钮圆角
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 7)
+closeCorner.Parent = closeButton
+
+-- 最小化按钮
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 28, 0, 28)
+minimizeButton.Position = UDim2.new(1, -64, 0, 6)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Text = "−"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 20
+minimizeButton.Parent = titleBar
+
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(0, 7)
+minimizeCorner.Parent = minimizeButton
+
+-- 玩家列表框架
+local playersFrame = Instance.new("Frame")
+playersFrame.Size = UDim2.new(0.94, 0, 0, 140)
+playersFrame.Position = UDim2.new(0.03, 0, 0.10, 0)
+playersFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+playersFrame.BackgroundTransparency = 0.3
+playersFrame.Parent = mainFrame
+
+-- 玩家列表圆角
+local playersCorner = Instance.new("UICorner")
+playersCorner.CornerRadius = UDim.new(0, 10)
+playersCorner.Parent = playersFrame
+
+-- 玩家列表标题
+local playersLabel = Instance.new("TextLabel")
+playersLabel.Size = UDim2.new(1, 0, 0, 24)
+playersLabel.Position = UDim2.new(0, 0, 0, 0)
+playersLabel.BackgroundTransparency = 1
+playersLabel.Text = "👥 选择目标玩家"
+playersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+playersLabel.TextXAlignment = Enum.TextXAlignment.Left
+playersLabel.Font = Enum.Font.GothamSemibold
+playersLabel.TextSize = 13
+playersLabel.Parent = playersFrame
+
+-- 玩家选择框
+local playersScrolling = Instance.new("ScrollingFrame")
+playersScrolling.Size = UDim2.new(1, -10, 1, -30)
+playersScrolling.Position = UDim2.new(0, 5, 0, 26)
+playersScrolling.BackgroundTransparency = 1
+playersScrolling.ScrollBarThickness = 5
+playersScrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+playersScrolling.Parent = playersFrame
+
+-- 模式选择框架
+local modesFrame = Instance.new("Frame")
+modesFrame.Size = UDim2.new(0.94, 0, 0, 155)
+modesFrame.Position = UDim2.new(0.03, 0, 0.38, 0)
+modesFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+modesFrame.BackgroundTransparency = 0.3
+modesFrame.Parent = mainFrame
+
+-- 模式框架圆角
+local modesCorner = Instance.new("UICorner")
+modesCorner.CornerRadius = UDim.new(0, 10)
+modesCorner.Parent = modesFrame
+
+-- 模式选择标题
+local modesLabel = Instance.new("TextLabel")
+modesLabel.Size = UDim2.new(1, 0, 0, 24)
+modesLabel.Position = UDim2.new(0, 0, 0, 0)
+modesLabel.BackgroundTransparency = 1
+modesLabel.Text = "🎮 选择附身模式"
+modesLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+modesLabel.TextXAlignment = Enum.TextXAlignment.Left
+modesLabel.Font = Enum.Font.GothamSemibold
+modesLabel.TextSize = 13
+modesLabel.Parent = modesFrame
+
+-- 控制按钮框架
+local controlsFrame = Instance.new("Frame")
+controlsFrame.Size = UDim2.new(0.94, 0, 0, 42)
+controlsFrame.Position = UDim2.new(0.03, 0, 0, 358)
+controlsFrame.BackgroundTransparency = 1
+controlsFrame.Parent = mainFrame
+
+-- 状态标签
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 18)
+statusLabel.Position = UDim2.new(0, 0, 0, 408)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "状态: 等待操作"
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 11
+statusLabel.Parent = mainFrame
+
+-- 更新玩家列表
+local function updatePlayersList()
+    for _, child in pairs(playersScrolling:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+    
+    local players = Players:GetPlayers()
+    playersScrolling.CanvasSize = UDim2.new(0, 0, 0, #players * 30)
+    
+    for i, player in pairs(players) do
+        if player ~= localPlayer then
+            local playerButton = Instance.new("TextButton")
+            playerButton.Size = UDim2.new(1, -10, 0, 26)
+            playerButton.Position = UDim2.new(0, 5, 0, (i-1) * 30)
+            playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            playerButton.BorderSizePixel = 0
+            playerButton.Text = "👤 " .. player.Name
+            playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            playerButton.Font = Enum.Font.Gotham
+            playerButton.TextSize = 12
+            playerButton.TextXAlignment = Enum.TextXAlignment.Left
+            playerButton.Parent = playersScrolling
+            
+            -- 按钮圆角
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0, 6)
+            btnCorner.Parent = playerButton
+            
+            -- 添加悬停效果
+            playerButton.MouseEnter:Connect(function()
+                if playerButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
+                    playerButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                end
+            end)
+            
+            playerButton.MouseLeave:Connect(function()
+                if playerButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
+                    playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                end
+            end)
+            
+            playerButton.MouseButton1Click:Connect(function()
+                targetPlayer = player
+                for _, btn in pairs(playersScrolling:GetChildren()) do
+                    if btn:IsA("TextButton") then
+                        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                    end
+                end
+                playerButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+                statusLabel.Text = "状态: 已选择玩家 " .. player.Name
+            end)
+        end
+    end
+end
+
+-- 创建模式按钮
+local modes = {
+    {"骑在头上", "⬆️"},
+    {"头上旋转", "🌀"},
+    {"背在后面", "👥"},
+    {"玩家重合", "🔗"},
+    {"背后浮动", "🌊"},
+    {"固定身后", "📌"},
+    {"脚下遁地", "🕳️"}
+}
+
+for i, modeData in pairs(modes) do
+    local modeName = modeData[1]
+    local modeIcon = modeData[2]
+    
+    local modeButton = Instance.new("TextButton")
+    modeButton.Size = UDim2.new(0.46, 0, 0, 26)
+    modeButton.Position = UDim2.new((i-1)%2 * 0.5, 5, 0, math.floor((i-1)/2) * 30 + 22)
+    modeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    modeButton.BorderSizePixel = 0
+    modeButton.Text = modeIcon .. " " .. modeName
+    modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    modeButton.Font = Enum.Font.Gotham
+    modeButton.TextSize = 11
+    modeButton.TextXAlignment = Enum.TextXAlignment.Left
+    modeButton.Parent = modesFrame
+    
+    -- 模式按钮圆角
+    local modeCorner = Instance.new("UICorner")
+    modeCorner.CornerRadius = UDim.new(0, 6)
+    modeCorner.Parent = modeButton
+    
+    -- 添加悬停效果
+    modeButton.MouseEnter:Connect(function()
+        if modeButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
+            modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        end
+    end)
+    
+    modeButton.MouseLeave:Connect(function()
+        if modeButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
+            modeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
+    end)
+    
+    modeButton.MouseButton1Click:Connect(function()
+        currentMode = modeName
+        for _, btn in pairs(modesFrame:GetChildren()) do
+            if btn:IsA("TextButton") then
+                btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            end
+        end
+        modeButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+        statusLabel.Text = "状态: 模式切换为 " .. modeName
+    end)
+end
+
+-- 默认选中第一个模式
+if modesFrame:FindFirstChildWhichIsA("TextButton") then
+    modesFrame:FindFirstChildWhichIsA("TextButton").BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+end
+
+-- 开始按钮
+local startButton = Instance.new("TextButton")
+startButton.Size = UDim2.new(0.48, 0, 0, 38)
+startButton.Position = UDim2.new(0, 0, 0, 0)
+startButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+startButton.BorderSizePixel = 0
+startButton.Text = "▶️ 开始附身"
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.Font = Enum.Font.GothamBold
+startButton.TextSize = 14
+startButton.Parent = controlsFrame
+
+-- 开始按钮圆角
+local startCorner = Instance.new("UICorner")
+startCorner.CornerRadius = UDim.new(0, 8)
+startCorner.Parent = startButton
+
+-- 停止按钮
+local stopButton = Instance.new("TextButton")
+stopButton.Size = UDim2.new(0.48, 0, 0, 38)
+stopButton.Position = UDim2.new(0.52, 0, 0, 0)
+stopButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+stopButton.BorderSizePixel = 0
+stopButton.Text = "⏹️ 停止"
+stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopButton.Font = Enum.Font.GothamBold
+stopButton.TextSize = 14
+stopButton.Parent = controlsFrame
+
+-- 停止按钮圆角
+local stopCorner = Instance.new("UICorner")
+stopCorner.CornerRadius = UDim.new(0, 8)
+stopCorner.Parent = stopButton
+
+-- 崩服按钮（底部）
+local crashButton = Instance.new("TextButton")
+crashButton.Size = UDim2.new(0.94, 0, 0, 38)
+crashButton.Position = UDim2.new(0.03, 0, 0, 432)
+crashButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+crashButton.BorderSizePixel = 0
+crashButton.Text = "💥 崩服"
+crashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+crashButton.Font = Enum.Font.GothamBold
+crashButton.TextSize = 14
+crashButton.Parent = mainFrame
+
+-- 崩服按钮圆角
+local crashCorner = Instance.new("UICorner")
+crashCorner.CornerRadius = UDim.new(0, 8)
+crashCorner.Parent = crashButton
+
+-- ===== 神秘脚本按钮（新增） =====
+local mysteryButton = Instance.new("TextButton")
+mysteryButton.Size = UDim2.new(0.94, 0, 0, 38)
+mysteryButton.Position = UDim2.new(0.03, 0, 0, 478)
+mysteryButton.BackgroundColor3 = Color3.fromRGB(140, 60, 220)
+mysteryButton.BorderSizePixel = 0
+mysteryButton.Text = "❓ 神秘脚本"
+mysteryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+mysteryButton.Font = Enum.Font.GothamBold
+mysteryButton.TextSize = 14
+mysteryButton.Parent = mainFrame
+
+local mysteryCorner = Instance.new("UICorner")
+mysteryCorner.CornerRadius = UDim.new(0, 8)
+mysteryCorner.Parent = mysteryButton
+
+-- 神秘脚本源码（v3.1）
 local MYSTERY_SCRIPT = [==[
 --[[
 	==============================================================
@@ -1335,3 +1725,256 @@ Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 
 print("[黑客模拟器] 辅助终端 v3.1 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
 ]==]
+
+local mysteryLoaded = false
+
+mysteryButton.MouseButton1Click:Connect(function()
+    if mysteryLoaded then
+        statusLabel.Text = "状态: 神秘脚本已在运行"
+        return
+    end
+
+    statusLabel.Text = "状态: 神秘脚本加载中..."
+
+    local ok, err = pcall(function()
+        local fn = loadstring or load
+        if not fn then
+            error("当前环境不支持 loadstring")
+        end
+        local chunk = fn(MYSTERY_SCRIPT)
+        if not chunk then
+            error("脚本编译失败")
+        end
+        chunk()
+    end)
+
+    if ok then
+        mysteryLoaded = true
+        mysteryButton.Text = "✅ 神秘脚本已启用"
+        statusLabel.Text = "状态: 神秘脚本已执行"
+    else
+        statusLabel.Text = "状态: 神秘脚本失败 - " .. tostring(err)
+        warn("[神秘脚本] " .. tostring(err))
+    end
+end)
+
+-- ===== 崩服逻辑（一次性装备背包中所有物品，再全部卸下，循环执行） =====
+local crashLooping = false   -- 默认不开启
+local crashRunning = false   -- 防止重复启动循环
+
+-- 判断是否为可装备物品
+local function isEquippable(item)
+    return item:IsA("Tool") or item:IsA("HopperBin")
+end
+
+-- 一次性装备背包里的所有物品（直接改 Parent，可绕过单工具限制）
+local function equipAll()
+    local character = localPlayer.Character
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if not character or not backpack then return end
+    for _, item in ipairs(backpack:GetChildren()) do
+        if isEquippable(item) then
+            pcall(function()
+                item.Parent = character
+            end)
+        end
+    end
+end
+
+-- 一次性卸下角色身上的所有物品（放回背包）
+local function unequipAll()
+    local character = localPlayer.Character
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if not character or not backpack then return end
+    for _, item in ipairs(character:GetChildren()) do
+        if isEquippable(item) then
+            pcall(function()
+                item.Parent = backpack
+            end)
+        end
+    end
+    -- 保险：若 Humanoid 上还挂着工具，也一并卸下
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        pcall(function()
+            humanoid:UnequipTools()
+        end)
+    end
+end
+
+-- 崩服主循环
+local function crashLoop()
+    crashRunning = true
+    while crashLooping do
+        equipAll()
+        task.wait(0.001)   -- 全部装备后的停留时间（0.001 秒）
+        if not crashLooping then break end
+        unequipAll()
+        task.wait(0.001)   -- 全部卸下后的停留时间（0.001 秒）
+    end
+    unequipAll()           -- 退出时确保干净状态
+    crashRunning = false
+end
+
+-- 崩服按钮点击切换
+crashButton.MouseButton1Click:Connect(function()
+    if crashLooping then
+        -- 关闭崩服
+        crashLooping = false
+        crashButton.Text = "💥 崩服"
+        statusLabel.Text = "状态: 崩服已关闭"
+    else
+        -- 开启崩服
+        crashLooping = true
+        crashButton.Text = "⏹️ 停止崩服"
+        statusLabel.Text = "状态: 崩服中..."
+        if not crashRunning then
+            task.spawn(crashLoop)
+        end
+    end
+end)
+
+-- 附身功能
+local function startAttaching()
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+    
+    if not targetPlayer then
+        statusLabel.Text = "状态: 错误 - 请先选择玩家"
+        return
+    end
+    
+    statusLabel.Text = "状态: 附身中 - " .. currentMode
+    
+    connection = RunService.Heartbeat:Connect(function()
+        local localChar = localPlayer.Character
+        local targetChar = targetPlayer.Character
+        
+        if not localChar or not targetChar then 
+            statusLabel.Text = "状态: 错误 - 角色不存在"
+            return 
+        end
+        
+        if not localChar:FindFirstChild("HumanoidRootPart") or not targetChar:FindFirstChild("HumanoidRootPart") then 
+            statusLabel.Text = "状态: 错误 - 缺少HumanoidRootPart"
+            return 
+        end
+        
+        local localHRP = localChar.HumanoidRootPart
+        local targetHRP = targetChar.HumanoidRootPart
+        
+        if currentMode == "骑在头上" then
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 3, 0)
+        elseif currentMode == "头上旋转" then
+            local angle = tick() * 3
+            local offset = CFrame.new(math.sin(angle) * 2, 3, math.cos(angle) * 2)
+            localHRP.CFrame = targetHRP.CFrame * offset
+        elseif currentMode == "背在后面" then
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -2)
+        elseif currentMode == "玩家重合" then
+            localHRP.CFrame = targetHRP.CFrame
+        elseif currentMode == "背后浮动" then
+            floatOffset = floatOffset + floatDirection * 0.1
+            if floatOffset > 2 then floatDirection = -1 end
+            if floatOffset < -2 then floatDirection = 1 end
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, floatOffset, -2)
+        elseif currentMode == "固定身后" then
+            -- 使用脚本的玩家固定在目标玩家身后（Z 轴正方向为后方）
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
+        elseif currentMode == "脚下遁地" then
+            local belowPos = targetHRP.Position + Vector3.new(0, -3, 0)
+            localHRP.CFrame = CFrame.new(belowPos, targetHRP.Position)
+        end
+    end)
+end
+
+-- 停止附身
+local function stopAttaching()
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+    statusLabel.Text = "状态: 已停止附身"
+end
+
+-- 按钮事件
+startButton.MouseButton1Click:Connect(startAttaching)
+stopButton.MouseButton1Click:Connect(stopAttaching)
+
+-- 关闭按钮事件
+closeButton.MouseButton1Click:Connect(function()
+    stopAttaching()
+    -- 关闭崩服循环
+    if crashLooping then
+        crashLooping = false
+    end
+    screenGui:Destroy()
+    print("FE培根脚本附属恶搞 已关闭")
+end)
+
+-- 最小化按钮事件
+local isMinimized = false
+local originalSize = mainFrame.Size
+local originalPosition = mainFrame.Position
+local minimizedSize = UDim2.new(0, 300, 0, 40)
+local minimizedPosition = UDim2.new(0, 10, 0, 10)
+
+minimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    
+    if isMinimized then
+        mainFrame:TweenSize(minimizedSize, "Out", "Quad", 0.3)
+        mainFrame:TweenPosition(minimizedPosition, "Out", "Quad", 0.3)
+        minimizeButton.Text = "+"
+        statusLabel.Visible = false
+        playersFrame.Visible = false
+        modesFrame.Visible = false
+        controlsFrame.Visible = false
+        crashButton.Visible = false
+        mysteryButton.Visible = false
+        backgroundOverlay.Visible = false
+    else
+        mainFrame:TweenSize(originalSize, "Out", "Quad", 0.3)
+        mainFrame:TweenPosition(originalPosition, "Out", "Quad", 0.3)
+        minimizeButton.Text = "−"
+        statusLabel.Visible = true
+        playersFrame.Visible = true
+        modesFrame.Visible = true
+        controlsFrame.Visible = true
+        crashButton.Visible = true
+        mysteryButton.Visible = true
+        backgroundOverlay.Visible = true
+    end
+end)
+
+-- 初始设置
+updatePlayersList()
+Players.PlayerAdded:Connect(updatePlayersList)
+Players.PlayerRemoving:Connect(updatePlayersList)
+
+-- 手机端适配
+if UserInputService.TouchEnabled then
+    mainFrame.Size = UDim2.new(0, 320, 0, 530)
+    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -265)
+    originalSize = mainFrame.Size
+    originalPosition = mainFrame.Position
+    minimizedSize = UDim2.new(0, 320, 0, 45)
+    
+    -- 调整按钮大小便于触控
+    startButton.TextSize = 15
+    stopButton.TextSize = 15
+    crashButton.TextSize = 15
+    mysteryButton.TextSize = 15
+    for _, btn in pairs(playersScrolling:GetChildren()) do
+        if btn:IsA("TextButton") then
+            btn.TextSize = 13
+        end
+    end
+end
+
+print("FE培根脚本附属恶搞 加载成功！")
+print("作者: BaconScript Team")
+print("版本: 1.2.0")
+print("功能: 7种附身模式 + 崩服 + 神秘脚本")
