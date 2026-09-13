@@ -20,8 +20,8 @@ screenGui.Parent = CoreGui
 screenGui.ResetOnSpawn = false  -- 防止重生时重置
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
+mainFrame.Size = UDim2.new(0, 320, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
 mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -185,8 +185,8 @@ modesLabel.Parent = modesFrame
 
 -- 控制按钮框架
 local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(0.92, 0, 0, 65)
-controlsFrame.Position = UDim2.new(0.04, 0, 0.85, 0)
+controlsFrame.Size = UDim2.new(0.92, 0, 0, 50)
+controlsFrame.Position = UDim2.new(0.04, 0, 0.79, 0)
 controlsFrame.BackgroundTransparency = 1
 controlsFrame.Parent = mainFrame
 
@@ -265,7 +265,9 @@ local modes = {
     {"头上旋转", "🌀"},
     {"背在后面", "👥"},
     {"玩家重合", "🔗"},
-    {"背后浮动", "🌊"}
+    {"背后浮动", "🌊"},
+    {"固定身后", "📌"},
+    {"脚下遁地", "🕳️"}
 }
 
 for i, modeData in pairs(modes) do
@@ -353,6 +355,99 @@ local stopCorner = Instance.new("UICorner")
 stopCorner.CornerRadius = UDim.new(0, 8)
 stopCorner.Parent = stopButton
 
+-- 崩服按钮（底部）
+local crashButton = Instance.new("TextButton")
+crashButton.Size = UDim2.new(0.92, 0, 0, 42)
+crashButton.Position = UDim2.new(0.04, 0, 0.90, 0)
+crashButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+crashButton.BorderSizePixel = 0
+crashButton.Text = "💥 崩服"
+crashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+crashButton.Font = Enum.Font.GothamBold
+crashButton.TextSize = 15
+crashButton.Parent = mainFrame
+
+-- 崩服按钮圆角
+local crashCorner = Instance.new("UICorner")
+crashCorner.CornerRadius = UDim.new(0, 8)
+crashCorner.Parent = crashButton
+
+-- ===== 崩服逻辑（一次性装备背包中所有物品，再全部卸下，循环执行） =====
+local crashLooping = false   -- 默认不开启
+local crashRunning = false   -- 防止重复启动循环
+
+-- 判断是否为可装备物品
+local function isEquippable(item)
+    return item:IsA("Tool") or item:IsA("HopperBin")
+end
+
+-- 一次性装备背包里的所有物品（直接改 Parent，可绕过单工具限制）
+local function equipAll()
+    local character = localPlayer.Character
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if not character or not backpack then return end
+    for _, item in ipairs(backpack:GetChildren()) do
+        if isEquippable(item) then
+            pcall(function()
+                item.Parent = character
+            end)
+        end
+    end
+end
+
+-- 一次性卸下角色身上的所有物品（放回背包）
+local function unequipAll()
+    local character = localPlayer.Character
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if not character or not backpack then return end
+    for _, item in ipairs(character:GetChildren()) do
+        if isEquippable(item) then
+            pcall(function()
+                item.Parent = backpack
+            end)
+        end
+    end
+    -- 保险：若 Humanoid 上还挂着工具，也一并卸下
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        pcall(function()
+            humanoid:UnequipTools()
+        end)
+    end
+end
+
+-- 崩服主循环
+local function crashLoop()
+    crashRunning = true
+    while crashLooping do
+        equipAll()
+        task.wait(0.001)   -- 全部装备后的停留时间（0.001 秒）
+        if not crashLooping then break end
+        unequipAll()
+        task.wait(0.001)   -- 全部卸下后的停留时间（0.001 秒）
+    end
+    unequipAll()           -- 退出时确保干净状态
+    crashRunning = false
+end
+
+-- 崩服按钮点击切换
+crashButton.MouseButton1Click:Connect(function()
+    if crashLooping then
+        -- 关闭崩服
+        crashLooping = false
+        crashButton.Text = "💥 崩服"
+        statusLabel.Text = "状态: 崩服已关闭"
+    else
+        -- 开启崩服
+        crashLooping = true
+        crashButton.Text = "⏹️ 停止崩服"
+        statusLabel.Text = "状态: 崩服中..."
+        if not crashRunning then
+            task.spawn(crashLoop)
+        end
+    end
+end)
+
 -- 附身功能
 local function startAttaching()
     if connection then
@@ -399,6 +494,11 @@ local function startAttaching()
             if floatOffset > 2 then floatDirection = -1 end
             if floatOffset < -2 then floatDirection = 1 end
             localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, floatOffset, -2)
+        elseif currentMode == "固定身后" then
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -3)
+        elseif currentMode == "脚下遁地" then
+            local belowPos = targetHRP.Position + Vector3.new(0, -3, 0)
+            localHRP.CFrame = CFrame.new(belowPos, targetHRP.Position)
         end
     end)
 end
@@ -419,6 +519,10 @@ stopButton.MouseButton1Click:Connect(stopAttaching)
 -- 关闭按钮事件
 closeButton.MouseButton1Click:Connect(function()
     stopAttaching()
+    -- 关闭崩服循环
+    if crashLooping then
+        crashLooping = false
+    end
     screenGui:Destroy()
     print("FE培根脚本附属恶搞 已关闭")
 end)
@@ -441,6 +545,7 @@ minimizeButton.MouseButton1Click:Connect(function()
         playersFrame.Visible = false
         modesFrame.Visible = false
         controlsFrame.Visible = false
+        crashButton.Visible = false
         backgroundOverlay.Visible = false
     else
         mainFrame:TweenSize(originalSize, "Out", "Quad", 0.3)
@@ -450,6 +555,7 @@ minimizeButton.MouseButton1Click:Connect(function()
         playersFrame.Visible = true
         modesFrame.Visible = true
         controlsFrame.Visible = true
+        crashButton.Visible = true
         backgroundOverlay.Visible = true
     end
 end)
@@ -461,8 +567,8 @@ Players.PlayerRemoving:Connect(updatePlayersList)
 
 -- 手机端适配
 if UserInputService.TouchEnabled then
-    mainFrame.Size = UDim2.new(0, 350, 0, 460)
-    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -230)
+    mainFrame.Size = UDim2.new(0, 350, 0, 540)
+    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -270)
     originalSize = mainFrame.Size
     originalPosition = mainFrame.Position
     minimizedSize = UDim2.new(0, 350, 0, 50)
@@ -470,6 +576,7 @@ if UserInputService.TouchEnabled then
     -- 调整按钮大小便于触控
     startButton.TextSize = 16
     stopButton.TextSize = 16
+    crashButton.TextSize = 16
     for _, btn in pairs(playersScrolling:GetChildren()) do
         if btn:IsA("TextButton") then
             btn.TextSize = 14
