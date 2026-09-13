@@ -1,402 +1,11 @@
--- FE培根脚本附属恶搞
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-
-local localPlayer = Players.LocalPlayer
-local targetPlayer = nil
-local currentMode = "骑在头上"
-local connection = nil
-local floating = false
-local floatDirection = 1
-local floatOffset = 0
-
--- 创建UI在CoreGui中，这样角色死亡时不会消失
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FEBaconScriptUI"
-screenGui.Parent = CoreGui
-screenGui.ResetOnSpawn = false  -- 防止重生时重置
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 530)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -265)
-mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-
--- 添加圆角效果
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 15)
-corner.Parent = mainFrame
-
--- 背景图片
-local background = Instance.new("ImageLabel")
-background.Size = UDim2.new(1, 0, 1, 0)
-background.BackgroundTransparency = 1
-background.Image = "rbxassetid://89036103941643"
-background.ScaleType = Enum.ScaleType.Crop
-background.Parent = mainFrame
-
--- 为背景也添加圆角
-local bgCorner = Instance.new("UICorner")
-bgCorner.CornerRadius = UDim.new(0, 15)
-bgCorner.Parent = background
-
--- 添加背景遮罩
-local backgroundOverlay = Instance.new("Frame")
-backgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
-backgroundOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-backgroundOverlay.BackgroundTransparency = 0.4
-backgroundOverlay.BorderSizePixel = 0
-backgroundOverlay.Parent = mainFrame
-
-local overlayCorner = Instance.new("UICorner")
-overlayCorner.CornerRadius = UDim.new(0, 15)
-overlayCorner.Parent = backgroundOverlay
-
--- 标题栏
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.Position = UDim2.new(0, 0, 0, 0)
-titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-titleBar.BackgroundTransparency = 0.2
-titleBar.Parent = mainFrame
-
--- 标题栏圆角
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 15)
-titleCorner.Parent = titleBar
-
--- 标题
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 1, 0)
-title.Position = UDim2.new(0, 12, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "FE培根脚本附属恶搞"
-title.TextColor3 = Color3.fromRGB(255, 215, 0)  -- 金色
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleBar
-
--- 培根图标
-local baconIcon = Instance.new("ImageLabel")
-baconIcon.Size = UDim2.new(0, 22, 0, 22)
-baconIcon.Position = UDim2.new(0, -28, 0.5, -11)
-baconIcon.BackgroundTransparency = 1
-baconIcon.Image = "rbxassetid://6031302931"  -- 培根图标
-baconIcon.Parent = titleBar
-
--- 关闭按钮
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 28, 0, 28)
-closeButton.Position = UDim2.new(1, -32, 0, 6)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-closeButton.BorderSizePixel = 0
-closeButton.Text = "×"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.Font = Enum.Font.GothamBold
-closeButton.TextSize = 20
-closeButton.Parent = titleBar
-
--- 关闭按钮圆角
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 7)
-closeCorner.Parent = closeButton
-
--- 最小化按钮
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 28, 0, 28)
-minimizeButton.Position = UDim2.new(1, -64, 0, 6)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-minimizeButton.BorderSizePixel = 0
-minimizeButton.Text = "−"
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.TextSize = 20
-minimizeButton.Parent = titleBar
-
-local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.CornerRadius = UDim.new(0, 7)
-minimizeCorner.Parent = minimizeButton
-
--- 玩家列表框架
-local playersFrame = Instance.new("Frame")
-playersFrame.Size = UDim2.new(0.94, 0, 0, 140)
-playersFrame.Position = UDim2.new(0.03, 0, 0.10, 0)
-playersFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-playersFrame.BackgroundTransparency = 0.3
-playersFrame.Parent = mainFrame
-
--- 玩家列表圆角
-local playersCorner = Instance.new("UICorner")
-playersCorner.CornerRadius = UDim.new(0, 10)
-playersCorner.Parent = playersFrame
-
--- 玩家列表标题
-local playersLabel = Instance.new("TextLabel")
-playersLabel.Size = UDim2.new(1, 0, 0, 24)
-playersLabel.Position = UDim2.new(0, 0, 0, 0)
-playersLabel.BackgroundTransparency = 1
-playersLabel.Text = "👥 选择目标玩家"
-playersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-playersLabel.TextXAlignment = Enum.TextXAlignment.Left
-playersLabel.Font = Enum.Font.GothamSemibold
-playersLabel.TextSize = 13
-playersLabel.Parent = playersFrame
-
--- 玩家选择框
-local playersScrolling = Instance.new("ScrollingFrame")
-playersScrolling.Size = UDim2.new(1, -10, 1, -30)
-playersScrolling.Position = UDim2.new(0, 5, 0, 26)
-playersScrolling.BackgroundTransparency = 1
-playersScrolling.ScrollBarThickness = 5
-playersScrolling.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-playersScrolling.Parent = playersFrame
-
--- 模式选择框架
-local modesFrame = Instance.new("Frame")
-modesFrame.Size = UDim2.new(0.94, 0, 0, 155)
-modesFrame.Position = UDim2.new(0.03, 0, 0.38, 0)
-modesFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-modesFrame.BackgroundTransparency = 0.3
-modesFrame.Parent = mainFrame
-
--- 模式框架圆角
-local modesCorner = Instance.new("UICorner")
-modesCorner.CornerRadius = UDim.new(0, 10)
-modesCorner.Parent = modesFrame
-
--- 模式选择标题
-local modesLabel = Instance.new("TextLabel")
-modesLabel.Size = UDim2.new(1, 0, 0, 24)
-modesLabel.Position = UDim2.new(0, 0, 0, 0)
-modesLabel.BackgroundTransparency = 1
-modesLabel.Text = "🎮 选择附身模式"
-modesLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-modesLabel.TextXAlignment = Enum.TextXAlignment.Left
-modesLabel.Font = Enum.Font.GothamSemibold
-modesLabel.TextSize = 13
-modesLabel.Parent = modesFrame
-
--- 控制按钮框架
-local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(0.94, 0, 0, 42)
-controlsFrame.Position = UDim2.new(0.03, 0, 0, 358)
-controlsFrame.BackgroundTransparency = 1
-controlsFrame.Parent = mainFrame
-
--- 状态标签
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 18)
-statusLabel.Position = UDim2.new(0, 0, 0, 408)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "状态: 等待操作"
-statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 11
-statusLabel.Parent = mainFrame
-
--- 更新玩家列表
-local function updatePlayersList()
-    for _, child in pairs(playersScrolling:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
-    end
-    
-    local players = Players:GetPlayers()
-    playersScrolling.CanvasSize = UDim2.new(0, 0, 0, #players * 30)
-    
-    for i, player in pairs(players) do
-        if player ~= localPlayer then
-            local playerButton = Instance.new("TextButton")
-            playerButton.Size = UDim2.new(1, -10, 0, 26)
-            playerButton.Position = UDim2.new(0, 5, 0, (i-1) * 30)
-            playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            playerButton.BorderSizePixel = 0
-            playerButton.Text = "👤 " .. player.Name
-            playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            playerButton.Font = Enum.Font.Gotham
-            playerButton.TextSize = 12
-            playerButton.TextXAlignment = Enum.TextXAlignment.Left
-            playerButton.Parent = playersScrolling
-            
-            -- 按钮圆角
-            local btnCorner = Instance.new("UICorner")
-            btnCorner.CornerRadius = UDim.new(0, 6)
-            btnCorner.Parent = playerButton
-            
-            -- 添加悬停效果
-            playerButton.MouseEnter:Connect(function()
-                if playerButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
-                    playerButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-                end
-            end)
-            
-            playerButton.MouseLeave:Connect(function()
-                if playerButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
-                    playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-                end
-            end)
-            
-            playerButton.MouseButton1Click:Connect(function()
-                targetPlayer = player
-                for _, btn in pairs(playersScrolling:GetChildren()) do
-                    if btn:IsA("TextButton") then
-                        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-                    end
-                end
-                playerButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-                statusLabel.Text = "状态: 已选择玩家 " .. player.Name
-            end)
-        end
-    end
-end
-
--- 创建模式按钮
-local modes = {
-    {"骑在头上", "⬆️"},
-    {"头上旋转", "🌀"},
-    {"背在后面", "👥"},
-    {"玩家重合", "🔗"},
-    {"背后浮动", "🌊"},
-    {"固定身后", "📌"},
-    {"脚下遁地", "🕳️"}
-}
-
-for i, modeData in pairs(modes) do
-    local modeName = modeData[1]
-    local modeIcon = modeData[2]
-    
-    local modeButton = Instance.new("TextButton")
-    modeButton.Size = UDim2.new(0.46, 0, 0, 26)
-    modeButton.Position = UDim2.new((i-1)%2 * 0.5, 5, 0, math.floor((i-1)/2) * 30 + 22)
-    modeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    modeButton.BorderSizePixel = 0
-    modeButton.Text = modeIcon .. " " .. modeName
-    modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    modeButton.Font = Enum.Font.Gotham
-    modeButton.TextSize = 11
-    modeButton.TextXAlignment = Enum.TextXAlignment.Left
-    modeButton.Parent = modesFrame
-    
-    -- 模式按钮圆角
-    local modeCorner = Instance.new("UICorner")
-    modeCorner.CornerRadius = UDim.new(0, 6)
-    modeCorner.Parent = modeButton
-    
-    -- 添加悬停效果
-    modeButton.MouseEnter:Connect(function()
-        if modeButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
-            modeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        end
-    end)
-    
-    modeButton.MouseLeave:Connect(function()
-        if modeButton.BackgroundColor3 ~= Color3.fromRGB(0, 120, 255) then
-            modeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        end
-    end)
-    
-    modeButton.MouseButton1Click:Connect(function()
-        currentMode = modeName
-        for _, btn in pairs(modesFrame:GetChildren()) do
-            if btn:IsA("TextButton") then
-                btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            end
-        end
-        modeButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-        statusLabel.Text = "状态: 模式切换为 " .. modeName
-    end)
-end
-
--- 默认选中第一个模式
-if modesFrame:FindFirstChildWhichIsA("TextButton") then
-    modesFrame:FindFirstChildWhichIsA("TextButton").BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-end
-
--- 开始按钮
-local startButton = Instance.new("TextButton")
-startButton.Size = UDim2.new(0.48, 0, 0, 38)
-startButton.Position = UDim2.new(0, 0, 0, 0)
-startButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
-startButton.BorderSizePixel = 0
-startButton.Text = "▶️ 开始附身"
-startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-startButton.Font = Enum.Font.GothamBold
-startButton.TextSize = 14
-startButton.Parent = controlsFrame
-
--- 开始按钮圆角
-local startCorner = Instance.new("UICorner")
-startCorner.CornerRadius = UDim.new(0, 8)
-startCorner.Parent = startButton
-
--- 停止按钮
-local stopButton = Instance.new("TextButton")
-stopButton.Size = UDim2.new(0.48, 0, 0, 38)
-stopButton.Position = UDim2.new(0.52, 0, 0, 0)
-stopButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-stopButton.BorderSizePixel = 0
-stopButton.Text = "⏹️ 停止"
-stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-stopButton.Font = Enum.Font.GothamBold
-stopButton.TextSize = 14
-stopButton.Parent = controlsFrame
-
--- 停止按钮圆角
-local stopCorner = Instance.new("UICorner")
-stopCorner.CornerRadius = UDim.new(0, 8)
-stopCorner.Parent = stopButton
-
--- 崩服按钮（底部）
-local crashButton = Instance.new("TextButton")
-crashButton.Size = UDim2.new(0.94, 0, 0, 38)
-crashButton.Position = UDim2.new(0.03, 0, 0, 432)
-crashButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-crashButton.BorderSizePixel = 0
-crashButton.Text = "💥 崩服"
-crashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-crashButton.Font = Enum.Font.GothamBold
-crashButton.TextSize = 14
-crashButton.Parent = mainFrame
-
--- 崩服按钮圆角
-local crashCorner = Instance.new("UICorner")
-crashCorner.CornerRadius = UDim.new(0, 8)
-crashCorner.Parent = crashButton
-
--- ===== 神秘脚本按钮（新增） =====
-local mysteryButton = Instance.new("TextButton")
-mysteryButton.Size = UDim2.new(0.94, 0, 0, 38)
-mysteryButton.Position = UDim2.new(0.03, 0, 0, 478)
-mysteryButton.BackgroundColor3 = Color3.fromRGB(140, 60, 220)
-mysteryButton.BorderSizePixel = 0
-mysteryButton.Text = "❓ 神秘脚本"
-mysteryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-mysteryButton.Font = Enum.Font.GothamBold
-mysteryButton.TextSize = 14
-mysteryButton.Parent = mainFrame
-
-local mysteryCorner = Instance.new("UICorner")
-mysteryCorner.CornerRadius = UDim.new(0, 8)
-mysteryCorner.Parent = mysteryButton
-
 -- 神秘脚本源码
 local MYSTERY_SCRIPT = [==[
 --[[
 	==============================================================
-	 黑客模拟器 · 辅助终端 v3.0（全平台 / PC + 手机）
+	 黑客模拟器 · 辅助终端 v3.1（全平台 / PC + 手机）
 	 放置位置：StarterPlayer > StarterPlayerScripts (LocalScript)
 	 按键：PC 按 K 切换面板；手机点击悬浮按钮
-	 新增：脚本注入分类（Uhhhhhh / FE祖国人 / FE火车头 / FEv1.0.9 / FE培根VR）
-	 修复：侧边栏分类显示与点击问题
+	 修复：侧边栏分隔线占用布局导致分类显示不全
 	==============================================================
 ]]
 
@@ -410,8 +19,7 @@ local Workspace        = game:GetService("Workspace")
 local LP     = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- 平台判定
-local IS_TOUCH  = UserInputService.TouchEnabled
+local IS_TOUCH   = UserInputService.TouchEnabled
 local IS_DESKTOP = UserInputService.KeyboardEnabled and UserInputService.MouseEnabled
 
 --==================================================================
@@ -421,18 +29,15 @@ local Theme = {
 	Bg           = Color3.fromRGB(11, 13, 18),
 	Surface      = Color3.fromRGB(20, 24, 32),
 	Border       = Color3.fromRGB(38, 44, 58),
-
 	Text         = Color3.fromRGB(232, 238, 248),
 	TextDim      = Color3.fromRGB(128, 138, 158),
 	TextMute     = Color3.fromRGB(78, 86, 104),
-
 	Accent       = Color3.fromRGB(0, 230, 165),
 	AccentDeep   = Color3.fromRGB(0, 118, 88),
 	AccentBlue   = Color3.fromRGB(0, 175, 255),
 	Danger       = Color3.fromRGB(255, 82, 100),
-	Script       = Color3.fromRGB(180, 120, 255),   -- 脚本注入紫色
+	Script       = Color3.fromRGB(180, 120, 255),
 	ScriptDeep   = Color3.fromRGB(90, 50, 140),
-
 	Font         = Enum.Font.Gotham,
 	FontMed      = Enum.Font.GothamMedium,
 	FontBold     = Enum.Font.GothamBold,
@@ -441,8 +46,8 @@ local Theme = {
 --==================================================================
 --  工具
 --==================================================================
-local function new(className, props)
-	local inst = Instance.new(className)
+local function new(cls, props)
+	local inst = Instance.new(cls)
 	local parent
 	if props then
 		for k, v in pairs(props) do
@@ -453,36 +58,21 @@ local function new(className, props)
 	return inst
 end
 
-local function radius(obj, r)
-	return new("UICorner", { CornerRadius = UDim.new(0, r), Parent = obj })
-end
-
-local function outline(obj, color, thickness, transparency)
+local function radius(o, r) return new("UICorner", { CornerRadius = UDim.new(0, r), Parent = o }) end
+local function outline(o, c, t, tr)
 	return new("UIStroke", {
-		Color = color or Theme.Border,
-		Thickness = thickness or 1,
-		Transparency = transparency or 0,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Parent = obj,
+		Color = c or Theme.Border, Thickness = t or 1, Transparency = tr or 0,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = o,
 	})
 end
-
-local function gradient(obj, c1, c2, rotation)
-	return new("UIGradient", {
-		Color = ColorSequence.new(c1, c2),
-		Rotation = rotation or 0,
-		Parent = obj,
-	})
+local function gradient(o, c1, c2, rot)
+	return new("UIGradient", { Color = ColorSequence.new(c1, c2), Rotation = rot or 0, Parent = o })
 end
-
-local function tween(obj, time, props, style, dir)
-	local t = TweenService:Create(
-		obj,
-		TweenInfo.new(time, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out),
-		props
-	)
-	t:Play()
-	return t
+local function tween(o, t, props, style, dir)
+	local tw = TweenService:Create(o,
+		TweenInfo.new(t, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out), props)
+	tw:Play()
+	return tw
 end
 
 --==================================================================
@@ -503,9 +93,9 @@ local Defaults = { WalkSpeed = 16, JumpPower = 50 }
 --==================================================================
 --  角色工具
 --==================================================================
-local function getChar()  return LP.Character end
-local function getHum()   local c = getChar() return c and c:FindFirstChildOfClass("Humanoid") end
-local function getRoot()  local c = getChar() return c and c:FindFirstChild("HumanoidRootPart") end
+local function getChar() return LP.Character end
+local function getHum()  local c = getChar() return c and c:FindFirstChildOfClass("Humanoid") end
+local function getRoot() local c = getChar() return c and c:FindFirstChild("HumanoidRootPart") end
 
 local function getFlatLook(root)
 	local look = Camera.CFrame.LookVector
@@ -517,16 +107,8 @@ local function getFlatLook(root)
 	return flat.Unit
 end
 
--- 虚拟摇杆状态（手机）
-local Stick = {
-	active = false,
-	dirX = 0,
-	dirY = 0,
-	up = false,
-	down = false,
-}
+local Stick = { active = false, dirX = 0, dirY = 0, up = false, down = false }
 
--- 获取移动方向（PC 键盘 + 手机摇杆）
 local function getMoveDir(withVertical)
 	local dir = Vector3.zero
 	local cf = Camera.CFrame
@@ -542,16 +124,14 @@ local function getMoveDir(withVertical)
 		end
 	end
 
-	-- 手机摇杆方向
 	if IS_TOUCH and Stick.active then
 		local mag = math.sqrt(Stick.dirX ^ 2 + Stick.dirY ^ 2)
 		if mag > 0.12 then
-			local stickDir = cf.RightVector * Stick.dirX + cf.LookVector * (-Stick.dirY)
-			dir += Vector3.new(stickDir.X, dir.Y, stickDir.Z)
+			local sdir = cf.RightVector * Stick.dirX + cf.LookVector * (-Stick.dirY)
+			dir += Vector3.new(sdir.X, dir.Y, sdir.Z)
 		end
 	end
 
-	-- 手机升降按钮
 	if IS_TOUCH and withVertical then
 		if Stick.up   then dir += Vector3.yAxis end
 		if Stick.down then dir -= Vector3.yAxis end
@@ -560,25 +140,23 @@ local function getMoveDir(withVertical)
 	if not withVertical then
 		dir = Vector3.new(dir.X, 0, dir.Z)
 	end
-
 	return dir
 end
 
 --==================================================================
---  功能：飞行 / 穿墙
+--  飞行 / 穿墙
 --==================================================================
 local setFly, setGhost
 
 local flyAtt, flyLV, flyAO
 local ghostAtt, ghostLV, ghostAO
 
-local function clearFlyObjects()
+local function clearFlyObj()
 	if flyLV then flyLV:Destroy() flyLV = nil end
 	if flyAO then flyAO:Destroy() flyAO = nil end
 	if flyAtt then flyAtt:Destroy() flyAtt = nil end
 end
-
-local function clearGhostObjects()
+local function clearGhostObj()
 	if ghostLV then ghostLV:Destroy() ghostLV = nil end
 	if ghostAO then ghostAO:Destroy() ghostAO = nil end
 	if ghostAtt then ghostAtt:Destroy() ghostAtt = nil end
@@ -588,37 +166,30 @@ setFly = function(on)
 	State.Fly = on
 	local hum, root = getHum(), getRoot()
 	if not hum or not root then State.Fly = false return end
-
 	if on then
 		if State.Ghost then setGhost(false) end
-		clearFlyObjects()
+		clearFlyObj()
 		hum.PlatformStand = true
 		flyAtt = new("Attachment", { Name = "HackFlyAtt", Parent = root })
 		flyLV = new("LinearVelocity", {
-			Attachment0 = flyAtt,
-			RelativeTo = Enum.ActuatorRelativeTo.World,
-			MaxForce = math.huge,
-			VectorVelocity = Vector3.zero,
-			Parent = root,
+			Attachment0 = flyAtt, RelativeTo = Enum.ActuatorRelativeTo.World,
+			MaxForce = math.huge, VectorVelocity = Vector3.zero, Parent = root,
 		})
 		flyAO = new("AlignOrientation", {
-			Attachment0 = flyAtt,
-			Mode = Enum.OrientationAlignmentMode.OneAttachment,
-			MaxTorque = math.huge,
-			Responsiveness = 30,
-			Parent = root,
+			Attachment0 = flyAtt, Mode = Enum.OrientationAlignmentMode.OneAttachment,
+			MaxTorque = math.huge, Responsiveness = 30, Parent = root,
 		})
 	else
-		clearFlyObjects()
+		clearFlyObj()
 		if hum then hum.PlatformStand = false end
 	end
 end
 
-local function setCharCollision(canCollide)
+local function setCharCollision(cc)
 	local c = getChar()
 	if not c then return end
 	for _, d in ipairs(c:GetDescendants()) do
-		if d:IsA("BasePart") then d.CanCollide = canCollide end
+		if d:IsA("BasePart") then d.CanCollide = cc end
 	end
 end
 
@@ -626,35 +197,29 @@ setGhost = function(on)
 	State.Ghost = on
 	local hum, root = getHum(), getRoot()
 	if not hum or not root then State.Ghost = false return end
-
 	if on then
 		if State.Fly then setFly(false) end
-		clearGhostObjects()
+		clearGhostObj()
 		hum.PlatformStand = true
 		setCharCollision(false)
 		ghostAtt = new("Attachment", { Name = "HackGhostAtt", Parent = root })
 		ghostLV = new("LinearVelocity", {
-			Attachment0 = ghostAtt,
-			RelativeTo = Enum.ActuatorRelativeTo.World,
-			MaxForce = math.huge,
-			Parent = root,
+			Attachment0 = ghostAtt, RelativeTo = Enum.ActuatorRelativeTo.World,
+			MaxForce = math.huge, Parent = root,
 		})
 		ghostAO = new("AlignOrientation", {
-			Attachment0 = ghostAtt,
-			Mode = Enum.OrientationAlignmentMode.OneAttachment,
-			MaxTorque = math.huge,
-			Responsiveness = 30,
-			Parent = root,
+			Attachment0 = ghostAtt, Mode = Enum.OrientationAlignmentMode.OneAttachment,
+			MaxTorque = math.huge, Responsiveness = 30, Parent = root,
 		})
 	else
-		clearGhostObjects()
+		clearGhostObj()
 		setCharCollision(true)
 		if hum then hum.PlatformStand = false end
 	end
 end
 
 --==================================================================
---  功能：加速 / 跳跃
+--  加速 / 跳跃
 --==================================================================
 local function setSpeedUp(on)
 	State.SpeedUp = on
@@ -675,7 +240,7 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 --==================================================================
---  功能：透视
+--  透视
 --==================================================================
 local highlights = {}
 
@@ -690,14 +255,10 @@ local function applyHighlight(plr)
 	local char = plr.Character
 	if not char then return end
 	highlights[plr] = new("Highlight", {
-		Name = "HackXRay",
-		Adornee = char,
-		FillColor = Theme.Accent,
-		OutlineColor = Theme.Accent,
-		FillTransparency = 0.72,
-		OutlineTransparency = 0.1,
-		DepthMode = Enum.HighlightDepthMode.AlwaysOnTop,
-		Parent = char,
+		Name = "HackXRay", Adornee = char,
+		FillColor = Theme.Accent, OutlineColor = Theme.Accent,
+		FillTransparency = 0.72, OutlineTransparency = 0.1,
+		DepthMode = Enum.HighlightDepthMode.AlwaysOnTop, Parent = char,
 	})
 end
 
@@ -718,7 +279,7 @@ local function setXRay(on)
 end
 
 --==================================================================
---  功能：光照
+--  光照
 --==================================================================
 local lightingBackup = {}
 
@@ -737,14 +298,12 @@ local function setFullbright(on)
 		Lighting.Brightness     = 2
 		Lighting.ClockTime      = 14
 		Lighting.GlobalShadows  = false
-	else
-		if lightingBackup.Ambient ~= nil then
-			Lighting.Ambient        = lightingBackup.Ambient
-			Lighting.OutdoorAmbient = lightingBackup.OutdoorAmbient
-			Lighting.Brightness     = lightingBackup.Brightness
-			Lighting.ClockTime      = lightingBackup.ClockTime
-			Lighting.GlobalShadows  = lightingBackup.GlobalShadows
-		end
+	elseif lightingBackup.Ambient ~= nil then
+		Lighting.Ambient        = lightingBackup.Ambient
+		Lighting.OutdoorAmbient = lightingBackup.OutdoorAmbient
+		Lighting.Brightness     = lightingBackup.Brightness
+		Lighting.ClockTime      = lightingBackup.ClockTime
+		Lighting.GlobalShadows  = lightingBackup.GlobalShadows
 	end
 end
 
@@ -754,21 +313,15 @@ local function setNoFog(on)
 	State.NoFog = on
 	if on then
 		if not fogBackup then
-			fogBackup = {
-				FogEnd = Lighting.FogEnd,
-				FogStart = Lighting.FogStart,
-				FogColor = Lighting.FogColor,
-			}
+			fogBackup = { FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart, FogColor = Lighting.FogColor }
 		end
 		Lighting.FogEnd = 100000
 		Lighting.FogStart = 100000
-	else
-		if fogBackup then
-			Lighting.FogEnd   = fogBackup.FogEnd
-			Lighting.FogStart = fogBackup.FogStart
-			Lighting.FogColor = fogBackup.FogColor
-			fogBackup = nil
-		end
+	elseif fogBackup then
+		Lighting.FogEnd   = fogBackup.FogEnd
+		Lighting.FogStart = fogBackup.FogStart
+		Lighting.FogColor = fogBackup.FogColor
+		fogBackup = nil
 	end
 end
 
@@ -779,69 +332,56 @@ local function setNightVision(on)
 	if on then
 		if not nightVisEffect then
 			nightVisEffect = new("ColorCorrectionEffect", {
-				Name = "HackNightVision",
-				Brightness = 0.12,
-				Contrast = 0.22,
-				Saturation = -0.35,
-				TintColor = Color3.fromRGB(140, 255, 190),
+				Name = "HackNightVision", Brightness = 0.12, Contrast = 0.22,
+				Saturation = -0.35, TintColor = Color3.fromRGB(140, 255, 190),
 				Parent = Lighting,
 			})
 		end
-	else
-		if nightVisEffect then
-			nightVisEffect:Destroy()
-			nightVisEffect = nil
-		end
+	elseif nightVisEffect then
+		nightVisEffect:Destroy()
+		nightVisEffect = nil
 	end
 end
 
 --==================================================================
 --  脚本注入
 --==================================================================
+local StarterGui = game:GetService("StarterGui")
+
+local function notify(title, text, dur)
+	pcall(function()
+		StarterGui:SetCore("SendNotification", { Title = title, Text = text, Duration = dur or 4 })
+	end)
+end
+
 local function runScript(name, url)
 	local ok, err = pcall(function()
-		local source = game:HttpGet(url)
-		if type(source) ~= "string" or #source == 0 then
-			error("脚本内容为空")
-		end
-		loadstring(source)()
+		local src = game:HttpGet(url)
+		if type(src) ~= "string" or #src == 0 then error("脚本内容为空") end
+		loadstring(src)()
 	end)
-	if not ok then
-		warn("[脚本注入] " .. name .. " 执行失败: " .. tostring(err))
-		-- 失败通知
-		local StarterGui = game:GetService("StarterGui")
-		StarterGui:SetCore("SendNotification", {
-			Title = "脚本注入失败",
-			Text = name .. " 加载出错",
-			Duration = 4,
-		})
+	if ok then
+		notify("脚本注入成功", name .. " 已执行", 3)
 	else
-		local StarterGui = game:GetService("StarterGui")
-		StarterGui:SetCore("SendNotification", {
-			Title = "脚本注入成功",
-			Text = name .. " 已执行",
-			Duration = 4,
-		})
+		warn("[脚本注入] " .. name .. " 失败: " .. tostring(err))
+		notify("脚本注入失败", name .. " 加载出错", 4)
 	end
 end
 
 local SCRIPTS = {
-	{ name = "Uhhhhhh",       url = "https://raw.githubusercontent.com/STEVE-916-create/Uhhhhhh/main/source/reanim.lua" },
-	{ name = "FE祖国人",       url = "https://raw.githubusercontent.com/Baconhead123/zuguoren/refs/heads/main/FE祖国人" },
-	{ name = "FE火车头",       url = "https://raw.githubusercontent.com/Baconhead123/huochetou/refs/heads/main/FE火车头" },
-	{ name = "FEv1.0.9",      url = "https://raw.githubusercontent.com/Baconhead123/FE-1.0.9/refs/heads/main/终极FE v1.0.9 BaconNB" },
-	{ name = "FE培根VR",       url = "https://raw.githubusercontent.com/Baconhead123/baconVR/refs/heads/main/培根vr" },
+	{ name = "Uhhhhhh",  url = "https://raw.githubusercontent.com/STEVE-916-create/Uhhhhhh/main/source/reanim.lua" },
+	{ name = "FE祖国人",  url = "https://raw.githubusercontent.com/Baconhead123/zuguoren/refs/heads/main/FE祖国人" },
+	{ name = "FE火车头",  url = "https://raw.githubusercontent.com/Baconhead123/huochetou/refs/heads/main/FE火车头" },
+	{ name = "FEv1.0.9", url = "https://raw.githubusercontent.com/Baconhead123/FE-1.0.9/refs/heads/main/终极FE v1.0.9 BaconNB" },
+	{ name = "FE培根VR",  url = "https://raw.githubusercontent.com/Baconhead123/baconVR/refs/heads/main/培根vr" },
 }
 
 --==================================================================
 --  GUI 根
 --==================================================================
 local gui = new("ScreenGui", {
-	Name = "HackSimTerminal",
-	ResetOnSpawn = false,
-	IgnoreGuiInset = true,
-	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-	DisplayOrder = 100,
+	Name = "HackSimTerminal", ResetOnSpawn = false, IgnoreGuiInset = true,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling, DisplayOrder = 100,
 	Parent = LP:WaitForChild("PlayerGui"),
 })
 
@@ -853,16 +393,13 @@ local panel = new("Frame", {
 	Size = UDim2.fromOffset(580, 420),
 	Position = UDim2.new(0.5, 0, 0.5, 0),
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	BackgroundColor3 = Theme.Bg,
-	BorderSizePixel = 0,
-	ClipsDescendants = true,
-	Parent = gui,
+	BackgroundColor3 = Theme.Bg, BorderSizePixel = 0,
+	ClipsDescendants = true, Parent = gui,
 })
 radius(panel, 16)
 outline(panel, Theme.Border, 1, 0.35)
 gradient(panel, Color3.fromRGB(16, 19, 26), Color3.fromRGB(9, 11, 15), 90)
 
--- 自适应缩放（手机）
 local uiScale = new("UIScale", { Scale = 1, Parent = panel })
 
 local function updateScale()
@@ -871,142 +408,105 @@ local function updateScale()
 	local sy = (vp.Y - 60) / 420
 	uiScale.Scale = math.clamp(math.min(sx, sy), 0.55, 1)
 end
-
 updateScale()
 Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 
 -- 头部
 local header = new("Frame", {
-	Name = "Header",
-	Size = UDim2.new(1, 0, 0, 52),
-	BackgroundTransparency = 1,
-	Parent = panel,
+	Name = "Header", Size = UDim2.new(1, 0, 0, 52),
+	BackgroundTransparency = 1, Parent = panel,
 })
 
 new("Frame", {
-	Size = UDim2.new(1, -24, 0, 1),
-	Position = UDim2.new(0, 12, 1, -1),
-	BackgroundColor3 = Theme.Border,
-	BackgroundTransparency = 0.5,
-	BorderSizePixel = 0,
-	Parent = header,
+	Size = UDim2.new(1, -24, 0, 1), Position = UDim2.new(0, 12, 1, -1),
+	BackgroundColor3 = Theme.Border, BackgroundTransparency = 0.5,
+	BorderSizePixel = 0, Parent = header,
 })
 
 local logoDot = new("Frame", {
-	Size = UDim2.fromOffset(28, 28),
-	Position = UDim2.new(0, 16, 0.5, 0),
-	AnchorPoint = Vector2.new(0, 0.5),
-	BackgroundColor3 = Theme.AccentDeep,
-	BorderSizePixel = 0,
-	Parent = header,
+	Size = UDim2.fromOffset(28, 28), Position = UDim2.new(0, 16, 0.5, 0),
+	AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = Theme.AccentDeep,
+	BorderSizePixel = 0, Parent = header,
 })
 radius(logoDot, 8)
-
 new("TextLabel", {
-	Size = UDim2.fromScale(1, 1),
-	BackgroundTransparency = 1,
-	Text = "◈",
-	TextColor3 = Color3.fromRGB(4, 16, 12),
-	Font = Theme.FontBold,
-	TextSize = 16,
-	Parent = logoDot,
+	Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Text = "◈",
+	TextColor3 = Color3.fromRGB(4, 16, 12), Font = Theme.FontBold,
+	TextSize = 16, Parent = logoDot,
 })
 
 new("TextLabel", {
-	Size = UDim2.new(0, 320, 0, 18),
-	Position = UDim2.new(0, 56, 0, 11),
-	BackgroundTransparency = 1,
-	Text = "黑客模拟器",
-	TextColor3 = Theme.Text,
-	Font = Theme.FontBold,
-	TextSize = 15,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = header,
+	Size = UDim2.new(0, 320, 0, 18), Position = UDim2.new(0, 56, 0, 11),
+	BackgroundTransparency = 1, Text = "黑客模拟器", TextColor3 = Theme.Text,
+	Font = Theme.FontBold, TextSize = 15,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = header,
 })
 
 new("TextLabel", {
-	Size = UDim2.new(0, 320, 0, 14),
-	Position = UDim2.new(0, 56, 0, 29),
+	Size = UDim2.new(0, 320, 0, 14), Position = UDim2.new(0, 56, 0, 29),
 	BackgroundTransparency = 1,
-	Text = "辅助终端 v3.0 · " .. (IS_TOUCH and "触屏模式" or "桌面模式"),
-	TextColor3 = Theme.TextMute,
-	Font = Theme.Font,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = header,
+	Text = "辅助终端 v3.1 · " .. (IS_TOUCH and "触屏模式" or "桌面模式"),
+	TextColor3 = Theme.TextMute, Font = Theme.Font, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = header,
 })
 
--- 头部按钮
-local function makeHeaderButton(text, xOffset, onClick)
+local function makeHeaderButton(text, xOff, onClick)
 	local btn = new("TextButton", {
 		Size = UDim2.fromOffset(IS_TOUCH and 38 or 30, IS_TOUCH and 38 or 30),
-		Position = UDim2.new(1, xOffset, 0.5, 0),
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundColor3 = Theme.Surface,
-		BackgroundTransparency = 0.4,
-		BorderSizePixel = 0,
-		Text = text,
-		TextColor3 = Theme.TextDim,
-		Font = Theme.FontBold,
-		TextSize = IS_TOUCH and 16 or 14,
-		AutoButtonColor = false,
-		Parent = header,
+		Position = UDim2.new(1, xOff, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundColor3 = Theme.Surface, BackgroundTransparency = 0.4,
+		BorderSizePixel = 0, Text = text, TextColor3 = Theme.TextDim,
+		Font = Theme.FontBold, TextSize = IS_TOUCH and 16 or 14,
+		AutoButtonColor = false, Parent = header,
 	})
 	radius(btn, 8)
-
-	btn.MouseEnter:Connect(function()
-		tween(btn, 0.15, { BackgroundTransparency = 0, TextColor3 = Theme.Text })
-	end)
-	btn.MouseLeave:Connect(function()
-		tween(btn, 0.15, { BackgroundTransparency = 0.4, TextColor3 = Theme.TextDim })
-	end)
+	btn.MouseEnter:Connect(function() tween(btn, 0.15, { BackgroundTransparency = 0, TextColor3 = Theme.Text }) end)
+	btn.MouseLeave:Connect(function() tween(btn, 0.15, { BackgroundTransparency = 0.4, TextColor3 = Theme.TextDim }) end)
 	btn.MouseButton1Click:Connect(onClick)
 	return btn
 end
 
 local floatingBtn
-
 local function setPanelVisible(v)
 	panel.Visible = v
-	if floatingBtn and not IS_DESKTOP then
-		floatingBtn.Visible = not v
-	end
+	if floatingBtn and not IS_DESKTOP then floatingBtn.Visible = not v end
 end
 
-makeHeaderButton("—", -22 - (IS_TOUCH and 44 or 34), function()
-	setPanelVisible(false)
-end)
-
-makeHeaderButton("✕", -20, function()
-	setPanelVisible(false)
-end)
+makeHeaderButton("—", -22 - (IS_TOUCH and 44 or 34), function() setPanelVisible(false) end)
+makeHeaderButton("✕", -20, function() setPanelVisible(false) end)
 
 --==================================================================
---  侧边栏（已修复：统一 LayoutOrder + 按顺序排列）
+--  【修复重点】侧边栏
+--  说明：分隔线不再放进 sidebar，改为挂在 panel 上，
+--        避免它被 UIListLayout 当作子元素排版。
 --==================================================================
 local sidebar = new("Frame", {
 	Name = "Sidebar",
 	Size = UDim2.new(0, 132, 1, -94),
 	Position = UDim2.new(0, 14, 0, 62),
 	BackgroundTransparency = 1,
+	ClipsDescendants = false,
 	Parent = panel,
 })
 
 new("UIListLayout", {
 	Padding = UDim.new(0, 4),
-	SortOrder = Enum.SortOrder.LayoutOrder,   -- 按 LayoutOrder 排序
+	SortOrder = Enum.SortOrder.LayoutOrder,
+	FillDirection = Enum.FillDirection.Vertical,
 	HorizontalAlignment = Enum.HorizontalAlignment.Left,
 	VerticalAlignment = Enum.VerticalAlignment.Top,
 	Parent = sidebar,
 })
 
+-- 分隔线：挂在 panel 上，绝对定位，不参与 sidebar 布局
 new("Frame", {
-	Size = UDim2.new(0, 1, 1, 0),
-	Position = UDim2.new(1, 4, 0, 0),
+	Name = "SidebarDivider",
+	Size = UDim2.new(0, 1, 1, -94),
+	Position = UDim2.new(0, 150, 0, 62),
 	BackgroundColor3 = Theme.Border,
 	BackgroundTransparency = 0.55,
 	BorderSizePixel = 0,
-	Parent = sidebar,
+	Parent = panel,
 })
 
 -- 内容区
@@ -1022,52 +522,32 @@ local contentArea = new("Frame", {
 local statusBar = new("Frame", {
 	Size = UDim2.new(1, 0, 0, 32),
 	Position = UDim2.new(0, 0, 1, -32),
-	BackgroundTransparency = 1,
-	Parent = panel,
+	BackgroundTransparency = 1, Parent = panel,
 })
-
 new("Frame", {
-	Size = UDim2.new(1, -24, 0, 1),
-	Position = UDim2.new(0, 12, 0, 0),
-	BackgroundColor3 = Theme.Border,
-	BackgroundTransparency = 0.5,
-	BorderSizePixel = 0,
-	Parent = statusBar,
+	Size = UDim2.new(1, -24, 0, 1), Position = UDim2.new(0, 12, 0, 0),
+	BackgroundColor3 = Theme.Border, BackgroundTransparency = 0.5,
+	BorderSizePixel = 0, Parent = statusBar,
 })
-
 local statusDot = new("Frame", {
-	Size = UDim2.fromOffset(6, 6),
-	Position = UDim2.new(0, 18, 0.5, 0),
-	AnchorPoint = Vector2.new(0, 0.5),
-	BackgroundColor3 = Theme.Accent,
-	BorderSizePixel = 0,
-	Parent = statusBar,
+	Size = UDim2.fromOffset(6, 6), Position = UDim2.new(0, 18, 0.5, 0),
+	AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = Theme.Accent,
+	BorderSizePixel = 0, Parent = statusBar,
 })
 radius(statusDot, 3)
-
 new("TextLabel", {
-	Size = UDim2.new(0, 260, 1, 0),
-	Position = UDim2.new(0, 32, 0, 0),
+	Size = UDim2.new(0, 260, 1, 0), Position = UDim2.new(0, 32, 0, 0),
 	BackgroundTransparency = 1,
 	Text = IS_DESKTOP and "系统就绪 · 按 K 切换面板" or "系统就绪 · 点击悬浮按钮切换",
-	TextColor3 = Theme.TextMute,
-	Font = Theme.Font,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = statusBar,
+	TextColor3 = Theme.TextMute, Font = Theme.Font, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = statusBar,
 })
-
 local featureCountLbl = new("TextLabel", {
-	Size = UDim2.new(0, 200, 1, 0),
-	Position = UDim2.new(1, -16, 0, 0),
-	AnchorPoint = Vector2.new(1, 0),
-	BackgroundTransparency = 1,
-	Text = "已启用 0 项",
-	TextColor3 = Theme.TextMute,
-	Font = Theme.Font,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Right,
-	Parent = statusBar,
+	Size = UDim2.new(0, 200, 1, 0), Position = UDim2.new(1, -16, 0, 0),
+	AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1,
+	Text = "已启用 0 项", TextColor3 = Theme.TextMute,
+	Font = Theme.Font, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Right, Parent = statusBar,
 })
 
 --==================================================================
@@ -1084,7 +564,6 @@ header.InputBegan:Connect(function(input)
 		pOrigin = panel.Position
 	end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
 	if not pDragging then return end
 	if input.UserInputType == Enum.UserInputType.MouseMovement
@@ -1092,11 +571,9 @@ UserInputService.InputChanged:Connect(function(input)
 		local d = input.Position - pStart
 		panel.Position = UDim2.new(
 			pOrigin.X.Scale, pOrigin.X.Offset + d.X,
-			pOrigin.Y.Scale, pOrigin.Y.Offset + d.Y
-		)
+			pOrigin.Y.Scale, pOrigin.Y.Offset + d.Y)
 	end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 	or input.UserInputType == Enum.UserInputType.Touch then
@@ -1105,33 +582,22 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 --==================================================================
---  组件：滚动框 / 行 / 开关 / 滑块
+--  组件
 --==================================================================
 local function makeScrollFrame()
 	local sf = new("ScrollingFrame", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = IS_TOUCH and 6 or 3,
-		ScrollBarImageColor3 = Theme.Border,
-		ScrollBarImageTransparency = 0.2,
-		CanvasSize = UDim2.new(),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollBarImageColor3 = Theme.Border, ScrollBarImageTransparency = 0.2,
+		CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
-		Visible = false,
-		Parent = contentArea,
+		Visible = false, Parent = contentArea,
 	})
-	new("UIListLayout", {
-		Padding = UDim.new(0, 6),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = sf,
-	})
+	new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = sf })
 	new("UIPadding", {
-		PaddingTop = UDim.new(0, 2),
-		PaddingLeft = UDim.new(0, 2),
-		PaddingRight = UDim.new(0, 14),
-		PaddingBottom = UDim.new(0, 12),
-		Parent = sf,
+		PaddingTop = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2),
+		PaddingRight = UDim.new(0, 14), PaddingBottom = UDim.new(0, 12), Parent = sf,
 	})
 	return sf
 end
@@ -1141,49 +607,29 @@ local ROW_HEIGHT = IS_TOUCH and 62 or 52
 local function createBaseRow(parent, order, height)
 	local row = new("Frame", {
 		Size = UDim2.new(1, 0, 0, height or ROW_HEIGHT),
-		BackgroundColor3 = Theme.Surface,
-		BackgroundTransparency = 0.4,
-		BorderSizePixel = 0,
-		Active = true,
-		LayoutOrder = order,
-		Parent = parent,
+		BackgroundColor3 = Theme.Surface, BackgroundTransparency = 0.4,
+		BorderSizePixel = 0, Active = true, LayoutOrder = order, Parent = parent,
 	})
 	radius(row, 10)
-	row.MouseEnter:Connect(function()
-		tween(row, 0.15, { BackgroundTransparency = 0.15 })
-	end)
-	row.MouseLeave:Connect(function()
-		tween(row, 0.15, { BackgroundTransparency = 0.4 })
-	end)
+	row.MouseEnter:Connect(function() tween(row, 0.15, { BackgroundTransparency = 0.15 }) end)
+	row.MouseLeave:Connect(function() tween(row, 0.15, { BackgroundTransparency = 0.4 }) end)
 	return row
 end
 
 local function addToggleRow(parent, order, title, desc, default, onChange)
 	local row = createBaseRow(parent, order, ROW_HEIGHT)
-
 	new("TextLabel", {
-		Size = UDim2.new(1, -100, 0, 16),
-		Position = UDim2.new(0, 14, 0, 10),
-		BackgroundTransparency = 1,
-		Text = title,
-		TextColor3 = Theme.Text,
-		Font = Theme.FontBold,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = row,
+		Size = UDim2.new(1, -100, 0, 16), Position = UDim2.new(0, 14, 0, 10),
+		BackgroundTransparency = 1, Text = title, TextColor3 = Theme.Text,
+		Font = Theme.FontBold, TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
 	})
-
 	new("TextLabel", {
-		Size = UDim2.new(1, -100, 0, 14),
-		Position = UDim2.new(0, 14, 0, 28),
-		BackgroundTransparency = 1,
-		Text = desc or "",
-		TextColor3 = Theme.TextMute,
-		Font = Theme.Font,
-		TextSize = 11,
+		Size = UDim2.new(1, -100, 0, 14), Position = UDim2.new(0, 14, 0, 28),
+		BackgroundTransparency = 1, Text = desc or "", TextColor3 = Theme.TextMute,
+		Font = Theme.Font, TextSize = 11,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		Parent = row,
+		TextTruncate = Enum.TextTruncate.AtEnd, Parent = row,
 	})
 
 	local trackSize = IS_TOUCH and 52 or 42
@@ -1191,29 +637,20 @@ local function addToggleRow(parent, order, title, desc, default, onChange)
 
 	local track = new("Frame", {
 		Size = UDim2.fromOffset(trackSize, IS_TOUCH and 30 or 24),
-		Position = UDim2.new(1, -14, 0.5, 0),
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundColor3 = Theme.Border,
-		BorderSizePixel = 0,
-		Parent = row,
+		Position = UDim2.new(1, -14, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundColor3 = Theme.Border, BorderSizePixel = 0, Parent = row,
 	})
 	radius(track, trackSize / 2)
 
 	local knob = new("Frame", {
 		Size = UDim2.fromOffset(knobSize, knobSize),
-		Position = UDim2.new(0, 3, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundColor3 = Theme.TextDim,
-		BorderSizePixel = 0,
-		Parent = track,
+		Position = UDim2.new(0, 3, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5),
+		BackgroundColor3 = Theme.TextDim, BorderSizePixel = 0, Parent = track,
 	})
 	radius(knob, knobSize / 2)
 
 	local hit = new("TextButton", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		Text = "",
-		Parent = track,
+		Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Text = "", Parent = track,
 	})
 
 	local isOn = not not default
@@ -1236,7 +673,6 @@ local function addToggleRow(parent, order, title, desc, default, onChange)
 			}):Play()
 		end
 	end
-
 	render(false)
 
 	hit.MouseButton1Click:Connect(function()
@@ -1247,80 +683,50 @@ local function addToggleRow(parent, order, title, desc, default, onChange)
 
 	return {
 		Get = function() return isOn end,
-		Set = function(v)
-			if isOn == v then return end
-			isOn = v
-			render(true)
-		end,
+		Set = function(v) if isOn ~= v then isOn = v render(true) end end,
 	}
 end
 
 local function addSliderRow(parent, order, title, min, max, default, suffix, onChange)
 	local row = createBaseRow(parent, order, IS_TOUCH and 72 or 58)
-
 	new("TextLabel", {
-		Size = UDim2.new(1, -110, 0, 16),
-		Position = UDim2.new(0, 14, 0, 9),
-		BackgroundTransparency = 1,
-		Text = title,
-		TextColor3 = Theme.Text,
-		Font = Theme.FontBold,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = row,
+		Size = UDim2.new(1, -110, 0, 16), Position = UDim2.new(0, 14, 0, 9),
+		BackgroundTransparency = 1, Text = title, TextColor3 = Theme.Text,
+		Font = Theme.FontBold, TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
 	})
-
 	local valueLbl = new("TextLabel", {
-		Size = UDim2.fromOffset(90, 16),
-		Position = UDim2.new(1, -14, 0, 9),
-		AnchorPoint = Vector2.new(1, 0),
-		BackgroundTransparency = 1,
-		Text = "",
-		TextColor3 = Theme.Accent,
-		Font = Theme.FontBold,
-		TextSize = 12,
-		TextXAlignment = Enum.TextXAlignment.Right,
-		Parent = row,
+		Size = UDim2.fromOffset(90, 16), Position = UDim2.new(1, -14, 0, 9),
+		AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, Text = "",
+		TextColor3 = Theme.Accent, Font = Theme.FontBold, TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Right, Parent = row,
 	})
-
 	local track = new("Frame", {
 		Size = UDim2.new(1, -28, 0, IS_TOUCH and 8 or 4),
 		Position = UDim2.new(0, 14, 0, IS_TOUCH and 48 or 38),
-		BackgroundColor3 = Theme.Border,
-		BorderSizePixel = 0,
-		Parent = row,
+		BackgroundColor3 = Theme.Border, BorderSizePixel = 0, Parent = row,
 	})
 	radius(track, 4)
-
 	local fill = new("Frame", {
-		Size = UDim2.fromScale(0, 1),
-		BackgroundColor3 = Theme.Accent,
-		BorderSizePixel = 0,
-		Parent = track,
+		Size = UDim2.fromScale(0, 1), BackgroundColor3 = Theme.Accent,
+		BorderSizePixel = 0, Parent = track,
 	})
 	radius(fill, 4)
 	gradient(fill, Theme.AccentBlue, Theme.Accent, 0)
 
 	local knobSize = IS_TOUCH and 22 or 14
-
 	local knob = new("Frame", {
 		Size = UDim2.fromOffset(knobSize, knobSize),
-		Position = UDim2.new(0, 0, 0.5, 0),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Color3.fromRGB(240, 248, 255),
-		BorderSizePixel = 0,
-		Parent = track,
+		Position = UDim2.new(0, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = Color3.fromRGB(240, 248, 255), BorderSizePixel = 0, Parent = track,
 	})
 	radius(knob, knobSize / 2)
 	outline(knob, Theme.Accent, 2, 0.35)
 
 	local hit = new("TextButton", {
 		Size = UDim2.new(1, 0, 0, IS_TOUCH and 36 or 26),
-		Position = UDim2.new(0, 0, 1, 0),
-		AnchorPoint = Vector2.new(0, 1),
-		BackgroundTransparency = 1,
-		Text = "",
-		Parent = row,
+		Position = UDim2.new(0, 0, 1, 0), AnchorPoint = Vector2.new(0, 1),
+		BackgroundTransparency = 1, Text = "", Parent = row,
 	})
 
 	local value = default
@@ -1333,20 +739,17 @@ local function addSliderRow(parent, order, title, min, max, default, suffix, onC
 		knob.Position = UDim2.new(s, 0, 0.5, 0)
 		valueLbl.Text = tostring(value) .. (suffix or "")
 	end
-
 	local function applyFromX(x)
-		local absX = track.AbsolutePosition.X
+		local ax = track.AbsolutePosition.X
 		local w = track.AbsoluteSize.X
 		if w <= 0 then return end
-		local rel = math.clamp((x - absX) / w, 0, 1)
+		local rel = math.clamp((x - ax) / w, 0, 1)
 		local nv = math.clamp(math.floor(min + (max - min) * rel + 0.5), min, max)
 		if nv ~= value then
-			value = nv
-			render()
+			value = nv render()
 			if onChange then onChange(value) end
 		end
 	end
-
 	hit.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
@@ -1354,7 +757,6 @@ local function addSliderRow(parent, order, title, min, max, default, suffix, onC
 			applyFromX(input.Position.X)
 		end
 	end)
-
 	UserInputService.InputChanged:Connect(function(input)
 		if not dragging then return end
 		if input.UserInputType == Enum.UserInputType.MouseMovement
@@ -1362,27 +764,21 @@ local function addSliderRow(parent, order, title, min, max, default, suffix, onC
 			applyFromX(input.Position.X)
 		end
 	end)
-
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
 		end
 	end)
-
 	render()
-
 	return {
 		Get = function() return value end,
-		Set = function(v)
-			value = math.clamp(math.floor(v + 0.5), min, max)
-			render()
-		end,
+		Set = function(v) value = math.clamp(math.floor(v + 0.5), min, max) render() end,
 	}
 end
 
 --==================================================================
---  标签页
+--  标签页注册
 --==================================================================
 local tabs = {}
 local currentTab = nil
@@ -1415,36 +811,24 @@ local function registerTab(key, label, order)
 
 	local btn = new("TextButton", {
 		Size = UDim2.new(1, 0, 0, IS_TOUCH and 44 or 38),
-		BackgroundColor3 = Theme.Accent,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Text = "",
-		AutoButtonColor = false,
-		LayoutOrder = order,   -- 关键：使用传入的 order
-		Parent = sidebar,
+		BackgroundColor3 = Theme.Accent, BackgroundTransparency = 1,
+		BorderSizePixel = 0, Text = "", AutoButtonColor = false,
+		LayoutOrder = order, Parent = sidebar,
 	})
 	radius(btn, 9)
 
 	local dot = new("Frame", {
-		Size = UDim2.fromOffset(6, 6),
-		Position = UDim2.new(0, 14, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundColor3 = Theme.TextMute,
-		BorderSizePixel = 0,
-		Parent = btn,
+		Size = UDim2.fromOffset(6, 6), Position = UDim2.new(0, 14, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = Theme.TextMute,
+		BorderSizePixel = 0, Parent = btn,
 	})
 	radius(dot, 3)
 
 	local lbl = new("TextLabel", {
-		Size = UDim2.new(1, -36, 1, 0),
-		Position = UDim2.new(0, 28, 0, 0),
-		BackgroundTransparency = 1,
-		Text = label,
-		TextColor3 = Theme.TextDim,
-		Font = Theme.FontMed,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = btn,
+		Size = UDim2.new(1, -36, 1, 0), Position = UDim2.new(0, 28, 0, 0),
+		BackgroundTransparency = 1, Text = label, TextColor3 = Theme.TextDim,
+		Font = Theme.FontMed, TextSize = 13,
+		TextXAlignment = Enum.TextXAlignment.Left, Parent = btn,
 	})
 
 	btn.MouseEnter:Connect(function()
@@ -1460,26 +844,17 @@ local function registerTab(key, label, order)
 end
 
 --==================================================================
---  填充：移动
+--  移动
 --==================================================================
 local moveTab = registerTab("move", "移动", 1)
 
 addToggleRow(moveTab, 1, "飞行", IS_TOUCH and "触屏摇杆 + ▲▼ 控制" or "空格上升 / Shift 下降",
 	State.Fly, function(on) setFly(on) updateMobileControls() end)
-
-addSliderRow(moveTab, 2, "飞行速度", 10, 300, Config.FlySpeed, "", function(v)
-	Config.FlySpeed = v
-end)
-
+addSliderRow(moveTab, 2, "飞行速度", 10, 300, Config.FlySpeed, "", function(v) Config.FlySpeed = v end)
 addToggleRow(moveTab, 3, "穿墙", "关闭碰撞 · 可穿过地形", State.Ghost,
 	function(on) setGhost(on) updateMobileControls() end)
-
-addSliderRow(moveTab, 4, "悬浮高度", 1, 20, Config.GhostHeight, "", function(v)
-	Config.GhostHeight = v
-end)
-
+addSliderRow(moveTab, 4, "悬浮高度", 1, 20, Config.GhostHeight, "", function(v) Config.GhostHeight = v end)
 addToggleRow(moveTab, 5, "加速", "提升角色行走速度", State.SpeedUp, function(on) setSpeedUp(on) end)
-
 addSliderRow(moveTab, 6, "行走速度", 16, 300, Config.WalkSpeed, "", function(v)
 	Config.WalkSpeed = v
 	if State.SpeedUp then
@@ -1487,30 +862,21 @@ addSliderRow(moveTab, 6, "行走速度", 16, 300, Config.WalkSpeed, "", function
 		if hum then hum.WalkSpeed = v end
 	end
 end)
-
 addToggleRow(moveTab, 7, "无限跳跃", "空中也可再次起跳", State.InfJump,
 	function(on) State.InfJump = on end)
-
-addSliderRow(moveTab, 8, "跳跃高度", 50, 300, Config.JumpPower, "", function(v)
-	setJumpPower(v)
-end)
+addSliderRow(moveTab, 8, "跳跃高度", 50, 300, Config.JumpPower, "", function(v) setJumpPower(v) end)
 
 --==================================================================
---  填充：视觉
+--  视觉
 --==================================================================
 local visualTab = registerTab("visual", "视觉", 2)
-
-addToggleRow(visualTab, 1, "透视高亮", "让其他玩家穿透显示", State.XRay,
-	function(on) setXRay(on) end)
-addToggleRow(visualTab, 2, "全亮模式", "提升环境光照亮度", State.Fullbright,
-	function(on) setFullbright(on) end)
-addToggleRow(visualTab, 3, "移除雾气", "消除场景中的雾效", State.NoFog,
-	function(on) setNoFog(on) end)
-addToggleRow(visualTab, 4, "夜视仪", "暗处也能看清周围", State.NightVis,
-	function(on) setNightVision(on) end)
+addToggleRow(visualTab, 1, "透视高亮", "让其他玩家穿透显示", State.XRay, function(on) setXRay(on) end)
+addToggleRow(visualTab, 2, "全亮模式", "提升环境光照亮度", State.Fullbright, function(on) setFullbright(on) end)
+addToggleRow(visualTab, 3, "移除雾气", "消除场景中的雾效", State.NoFog, function(on) setNoFog(on) end)
+addToggleRow(visualTab, 4, "夜视仪", "暗处也能看清周围", State.NightVis, function(on) setNightVision(on) end)
 
 --==================================================================
---  填充：玩家
+--  玩家
 --==================================================================
 local playerTab = registerTab("players", "玩家", 3)
 
@@ -1518,169 +884,101 @@ rebuildPlayerList = function()
 	for _, c in ipairs(playerTab:GetChildren()) do
 		if c:IsA("GuiObject") then c:Destroy() end
 	end
-
 	local list = {}
 	for _, p in ipairs(Players:GetPlayers()) do
 		if p ~= LP then table.insert(list, p) end
 	end
 
 	new("TextLabel", {
-		Size = UDim2.new(1, 0, 0, 22),
-		BackgroundTransparency = 1,
-		Text = "在线玩家 · " .. #list,
-		TextColor3 = Theme.TextMute,
-		Font = Theme.FontBold,
-		TextSize = 11,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		LayoutOrder = 1,
-		Parent = playerTab,
+		Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+		Text = "在线玩家 · " .. #list, TextColor3 = Theme.TextMute,
+		Font = Theme.FontBold, TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1, Parent = playerTab,
 	})
 
 	if #list == 0 then
 		new("TextLabel", {
-			Size = UDim2.new(1, 0, 0, 44),
-			BackgroundTransparency = 1,
-			Text = "暂无其他玩家",
-			TextColor3 = Theme.TextMute,
-			Font = Theme.Font,
-			TextSize = 12,
-			LayoutOrder = 2,
-			Parent = playerTab,
+			Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1,
+			Text = "暂无其他玩家", TextColor3 = Theme.TextMute,
+			Font = Theme.Font, TextSize = 12, LayoutOrder = 2, Parent = playerTab,
 		})
 		return
 	end
 
 	for i, p in ipairs(list) do
 		local row = createBaseRow(playerTab, i + 1, IS_TOUCH and 54 or 46)
-
 		local dot = new("Frame", {
-			Size = UDim2.fromOffset(6, 6),
-			Position = UDim2.new(0, 14, 0.5, 0),
-			AnchorPoint = Vector2.new(0, 0.5),
-			BackgroundColor3 = Theme.Accent,
-			BorderSizePixel = 0,
-			Parent = row,
+			Size = UDim2.fromOffset(6, 6), Position = UDim2.new(0, 14, 0.5, 0),
+			AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = Theme.Accent,
+			BorderSizePixel = 0, Parent = row,
 		})
 		radius(dot, 3)
-
 		new("TextLabel", {
-			Size = UDim2.new(1, -140, 1, 0),
-			Position = UDim2.new(0, 30, 0, 0),
-			BackgroundTransparency = 1,
-			Text = p.DisplayName .. "  @" .. p.Name,
-			TextColor3 = Theme.Text,
-			Font = Theme.FontMed,
-			TextSize = 12,
+			Size = UDim2.new(1, -140, 1, 0), Position = UDim2.new(0, 30, 0, 0),
+			BackgroundTransparency = 1, Text = p.DisplayName .. "  @" .. p.Name,
+			TextColor3 = Theme.Text, Font = Theme.FontMed, TextSize = 12,
 			TextXAlignment = Enum.TextXAlignment.Left,
-			TextTruncate = Enum.TextTruncate.AtEnd,
-			Parent = row,
+			TextTruncate = Enum.TextTruncate.AtEnd, Parent = row,
 		})
-
 		local tp = new("TextButton", {
 			Size = UDim2.fromOffset(IS_TOUCH and 76 or 62, IS_TOUCH and 34 or 26),
-			Position = UDim2.new(1, -14, 0.5, 0),
-			AnchorPoint = Vector2.new(1, 0.5),
-			BackgroundColor3 = Theme.AccentDeep,
-			BackgroundTransparency = 0.35,
-			BorderSizePixel = 0,
-			Text = "传送",
-			TextColor3 = Theme.Accent,
-			Font = Theme.FontBold,
-			TextSize = 11,
-			AutoButtonColor = false,
-			Parent = row,
+			Position = UDim2.new(1, -14, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+			BackgroundColor3 = Theme.AccentDeep, BackgroundTransparency = 0.35,
+			BorderSizePixel = 0, Text = "传送", TextColor3 = Theme.Accent,
+			Font = Theme.FontBold, TextSize = 11, AutoButtonColor = false, Parent = row,
 		})
 		radius(tp, 7)
-
 		tp.MouseEnter:Connect(function() tween(tp, 0.15, { BackgroundTransparency = 0 }) end)
 		tp.MouseLeave:Connect(function() tween(tp, 0.15, { BackgroundTransparency = 0.35 }) end)
-
 		tp.MouseButton1Click:Connect(function()
 			local myRoot = getRoot()
 			local tChar = p.Character
 			local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-			if myRoot and tRoot then
-				myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 4)
-			end
+			if myRoot and tRoot then myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 4) end
 		end)
 	end
 end
 
-Players.PlayerAdded:Connect(function()
-	task.wait(0.5)
-	if rebuildPlayerList then rebuildPlayerList() end
-end)
-Players.PlayerRemoving:Connect(function()
-	task.wait(0.1)
-	if rebuildPlayerList then rebuildPlayerList() end
-end)
+Players.PlayerAdded:Connect(function() task.wait(0.5) if rebuildPlayerList then rebuildPlayerList() end end)
+Players.PlayerRemoving:Connect(function() task.wait(0.1) if rebuildPlayerList then rebuildPlayerList() end end)
 
 --==================================================================
---  填充：脚本注入（新增）
+--  脚本
 --==================================================================
 local scriptTab = registerTab("scripts", "脚本", 4)
 
 new("TextLabel", {
-	Size = UDim2.new(1, 0, 0, 22),
-	BackgroundTransparency = 1,
-	Text = "点击按钮注入对应脚本",
-	TextColor3 = Theme.TextMute,
-	Font = Theme.FontBold,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	LayoutOrder = 1,
-	Parent = scriptTab,
+	Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
+	Text = "点击按钮注入对应脚本", TextColor3 = Theme.TextMute,
+	Font = Theme.FontBold, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1, Parent = scriptTab,
 })
 
 for i, entry in ipairs(SCRIPTS) do
 	local row = createBaseRow(scriptTab, i + 1, IS_TOUCH and 54 or 48)
-
 	local dot = new("Frame", {
-		Size = UDim2.fromOffset(6, 6),
-		Position = UDim2.new(0, 14, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
-		BackgroundColor3 = Theme.Script,
-		BorderSizePixel = 0,
-		Parent = row,
+		Size = UDim2.fromOffset(6, 6), Position = UDim2.new(0, 14, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = Theme.Script,
+		BorderSizePixel = 0, Parent = row,
 	})
 	radius(dot, 3)
-
 	new("TextLabel", {
-		Size = UDim2.new(1, -110, 1, 0),
-		Position = UDim2.new(0, 30, 0, 0),
-		BackgroundTransparency = 1,
-		Text = entry.name,
-		TextColor3 = Theme.Text,
-		Font = Theme.FontMed,
-		TextSize = 12,
+		Size = UDim2.new(1, -110, 1, 0), Position = UDim2.new(0, 30, 0, 0),
+		BackgroundTransparency = 1, Text = entry.name, TextColor3 = Theme.Text,
+		Font = Theme.FontMed, TextSize = 12,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		Parent = row,
+		TextTruncate = Enum.TextTruncate.AtEnd, Parent = row,
 	})
-
 	local injectBtn = new("TextButton", {
 		Size = UDim2.fromOffset(IS_TOUCH and 76 or 64, IS_TOUCH and 34 or 26),
-		Position = UDim2.new(1, -14, 0.5, 0),
-		AnchorPoint = Vector2.new(1, 0.5),
-		BackgroundColor3 = Theme.ScriptDeep,
-		BackgroundTransparency = 0.35,
-		BorderSizePixel = 0,
-		Text = "注入",
-		TextColor3 = Theme.Script,
-		Font = Theme.FontBold,
-		TextSize = 11,
-		AutoButtonColor = false,
-		Parent = row,
+		Position = UDim2.new(1, -14, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+		BackgroundColor3 = Theme.ScriptDeep, BackgroundTransparency = 0.35,
+		BorderSizePixel = 0, Text = "注入", TextColor3 = Theme.Script,
+		Font = Theme.FontBold, TextSize = 11, AutoButtonColor = false, Parent = row,
 	})
 	radius(injectBtn, 7)
-
-	injectBtn.MouseEnter:Connect(function()
-		tween(injectBtn, 0.15, { BackgroundTransparency = 0 })
-	end)
-	injectBtn.MouseLeave:Connect(function()
-		tween(injectBtn, 0.15, { BackgroundTransparency = 0.35 })
-	end)
-
+	injectBtn.MouseEnter:Connect(function() tween(injectBtn, 0.15, { BackgroundTransparency = 0 }) end)
+	injectBtn.MouseLeave:Connect(function() tween(injectBtn, 0.15, { BackgroundTransparency = 0.35 }) end)
 	injectBtn.MouseButton1Click:Connect(function()
 		injectBtn.Text = "..."
 		injectBtn.TextColor3 = Theme.TextMute
@@ -1694,51 +992,31 @@ for i, entry in ipairs(SCRIPTS) do
 end
 
 --==================================================================
---  填充：设置
+--  设置
 --==================================================================
 local settingsTab = registerTab("settings", "设置", 5)
 
 local closeAllRow = createBaseRow(settingsTab, 1, ROW_HEIGHT)
-
 new("TextLabel", {
-	Size = UDim2.new(1, -120, 0, 16),
-	Position = UDim2.new(0, 14, 0, 10),
-	BackgroundTransparency = 1,
-	Text = "一键关闭全部",
-	TextColor3 = Theme.Text,
-	Font = Theme.FontBold,
-	TextSize = 13,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = closeAllRow,
+	Size = UDim2.new(1, -120, 0, 16), Position = UDim2.new(0, 14, 0, 10),
+	BackgroundTransparency = 1, Text = "一键关闭全部", TextColor3 = Theme.Text,
+	Font = Theme.FontBold, TextSize = 13,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = closeAllRow,
 })
-
 new("TextLabel", {
-	Size = UDim2.new(1, -120, 0, 14),
-	Position = UDim2.new(0, 14, 0, 28),
-	BackgroundTransparency = 1,
-	Text = "重置所有模拟功能到初始状态",
-	TextColor3 = Theme.TextMute,
-	Font = Theme.Font,
-	TextSize = 11,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = closeAllRow,
+	Size = UDim2.new(1, -120, 0, 14), Position = UDim2.new(0, 14, 0, 28),
+	BackgroundTransparency = 1, Text = "重置所有模拟功能到初始状态",
+	TextColor3 = Theme.TextMute, Font = Theme.Font, TextSize = 11,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = closeAllRow,
 })
-
 local closeAllBtn = new("TextButton", {
 	Size = UDim2.fromOffset(IS_TOUCH and 84 or 70, IS_TOUCH and 36 or 26),
-	Position = UDim2.new(1, -14, 0.5, 0),
-	AnchorPoint = Vector2.new(1, 0.5),
-	BackgroundColor3 = Color3.fromRGB(60, 26, 32),
-	BorderSizePixel = 0,
-	Text = "重置",
-	TextColor3 = Theme.Danger,
-	Font = Theme.FontBold,
-	TextSize = 11,
-	AutoButtonColor = false,
-	Parent = closeAllRow,
+	Position = UDim2.new(1, -14, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
+	BackgroundColor3 = Color3.fromRGB(60, 26, 32), BorderSizePixel = 0,
+	Text = "重置", TextColor3 = Theme.Danger, Font = Theme.FontBold,
+	TextSize = 11, AutoButtonColor = false, Parent = closeAllRow,
 })
 radius(closeAllBtn, 7)
-
 closeAllBtn.MouseButton1Click:Connect(function()
 	if State.Fly        then setFly(false)         end
 	if State.Ghost      then setGhost(false)       end
@@ -1751,33 +1029,20 @@ closeAllBtn.MouseButton1Click:Connect(function()
 	updateMobileControls()
 end)
 
--- 关于
 local aboutRow = createBaseRow(settingsTab, 2, IS_TOUCH and 100 or 86)
-
 new("TextLabel", {
-	Size = UDim2.new(1, -28, 0, 16),
-	Position = UDim2.new(0, 14, 0, 12),
-	BackgroundTransparency = 1,
-	Text = "辅助终端 v3.0",
-	TextColor3 = Theme.Text,
-	Font = Theme.FontBold,
-	TextSize = 13,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = aboutRow,
+	Size = UDim2.new(1, -28, 0, 16), Position = UDim2.new(0, 14, 0, 12),
+	BackgroundTransparency = 1, Text = "辅助终端 v3.1", TextColor3 = Theme.Text,
+	Font = Theme.FontBold, TextSize = 13,
+	TextXAlignment = Enum.TextXAlignment.Left, Parent = aboutRow,
 })
-
 new("TextLabel", {
-	Size = UDim2.new(1, -28, 0, 60),
-	Position = UDim2.new(0, 14, 0, 32),
+	Size = UDim2.new(1, -28, 0, 60), Position = UDim2.new(0, 14, 0, 32),
 	BackgroundTransparency = 1,
 	Text = "支持 PC + 手机全平台。手机开启飞行/穿墙后，\n左下角自动显示虚拟摇杆，飞行时右侧出现升降按钮。\n脚本分类可注入外部脚本。",
-	TextColor3 = Theme.TextMute,
-	Font = Theme.Font,
-	TextSize = 11,
-	TextWrapped = true,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	TextYAlignment = Enum.TextYAlignment.Top,
-	Parent = aboutRow,
+	TextColor3 = Theme.TextMute, Font = Theme.Font, TextSize = 11,
+	TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top, Parent = aboutRow,
 })
 
 selectTab("move")
@@ -1790,75 +1055,55 @@ local joystickFrame, joystickKnob, upBtn, downBtn
 local function createMobileJoystick()
 	if not IS_TOUCH then return end
 
-	local JS_SIZE  = 138
-	local KNOB_SZ  = 58
-	local MAX_R    = JS_SIZE / 2 - KNOB_SZ / 2 - 4
+	local JS_SIZE = 138
+	local KNOB_SZ = 58
+	local MAX_R   = JS_SIZE / 2 - KNOB_SZ / 2 - 4
 
 	joystickFrame = new("Frame", {
 		Name = "VirtualStick",
 		Size = UDim2.fromOffset(JS_SIZE, JS_SIZE),
 		Position = UDim2.new(0, 40, 1, -190),
 		AnchorPoint = Vector2.new(0, 1),
-		BackgroundColor3 = Theme.Bg,
-		BackgroundTransparency = 0.35,
-		BorderSizePixel = 0,
-		Visible = false,
-		Active = true,
-		Parent = gui,
+		BackgroundColor3 = Theme.Bg, BackgroundTransparency = 0.35,
+		BorderSizePixel = 0, Visible = false, Active = true, Parent = gui,
 	})
 	radius(joystickFrame, JS_SIZE / 2)
 	outline(joystickFrame, Theme.Accent, 2, 0.45)
 
 	new("Frame", {
-		Size = UDim2.fromOffset(2, 28),
-		Position = UDim2.new(0.5, -1, 0, 14),
-		BackgroundColor3 = Theme.Border,
-		BackgroundTransparency = 0.3,
-		BorderSizePixel = 0,
-		Parent = joystickFrame,
+		Size = UDim2.fromOffset(2, 28), Position = UDim2.new(0.5, -1, 0, 14),
+		BackgroundColor3 = Theme.Border, BackgroundTransparency = 0.3,
+		BorderSizePixel = 0, Parent = joystickFrame,
 	})
 	new("Frame", {
-		Size = UDim2.fromOffset(28, 2),
-		Position = UDim2.new(0, 14, 0.5, -1),
-		BackgroundColor3 = Theme.Border,
-		BackgroundTransparency = 0.3,
-		BorderSizePixel = 0,
-		Parent = joystickFrame,
+		Size = UDim2.fromOffset(28, 2), Position = UDim2.new(0, 14, 0.5, -1),
+		BackgroundColor3 = Theme.Border, BackgroundTransparency = 0.3,
+		BorderSizePixel = 0, Parent = joystickFrame,
 	})
 
 	joystickKnob = new("Frame", {
 		Size = UDim2.fromOffset(KNOB_SZ, KNOB_SZ),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Theme.Accent,
-		BackgroundTransparency = 0.15,
-		BorderSizePixel = 0,
-		Parent = joystickFrame,
+		Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = Theme.Accent, BackgroundTransparency = 0.15,
+		BorderSizePixel = 0, Parent = joystickFrame,
 	})
 	radius(joystickKnob, KNOB_SZ / 2)
 	outline(joystickKnob, Color3.fromRGB(255, 255, 255), 2, 0.5)
 
-	local function makeVertBtn(symbol, yOffset)
+	local function makeVertBtn(symbol, yOff)
 		local b = new("TextButton", {
 			Size = UDim2.fromOffset(66, 66),
-			Position = UDim2.new(0, 200, 1, yOffset),
+			Position = UDim2.new(0, 200, 1, yOff),
 			AnchorPoint = Vector2.new(0, 1),
-			BackgroundColor3 = Theme.Bg,
-			BackgroundTransparency = 0.2,
-			BorderSizePixel = 0,
-			Text = symbol,
-			TextColor3 = Theme.Accent,
-			Font = Theme.FontBold,
-			TextSize = 22,
-			AutoButtonColor = false,
-			Visible = false,
-			Parent = gui,
+			BackgroundColor3 = Theme.Bg, BackgroundTransparency = 0.2,
+			BorderSizePixel = 0, Text = symbol, TextColor3 = Theme.Accent,
+			Font = Theme.FontBold, TextSize = 22, AutoButtonColor = false,
+			Visible = false, Parent = gui,
 		})
 		radius(b, 33)
 		outline(b, Theme.Accent, 2, 0.4)
 		return b
 	end
-
 	upBtn   = makeVertBtn("▲", -118)
 	downBtn = makeVertBtn("▼", -44)
 
@@ -1874,21 +1119,17 @@ local function createMobileJoystick()
 			Stick.dirY = d.Y / MAX_R
 		end
 	end)
-
 	UserInputService.InputChanged:Connect(function(input)
 		if not Stick.active then return end
 		if input.UserInputType ~= Enum.UserInputType.Touch
 		and input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-
 		local center = joystickFrame.AbsolutePosition + joystickFrame.AbsoluteSize / 2
 		local d = Vector2.new(input.Position.X - center.X, input.Position.Y - center.Y)
 		if d.Magnitude > MAX_R then d = d.Unit * MAX_R end
-
 		joystickKnob.Position = UDim2.new(0.5, d.X, 0.5, d.Y)
 		Stick.dirX = d.X / MAX_R
 		Stick.dirY = d.Y / MAX_R
 	end)
-
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch
 		or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1913,7 +1154,6 @@ local function createMobileJoystick()
 			tween(upBtn, 0.1, { BackgroundTransparency = 0.2 })
 		end
 	end)
-
 	downBtn.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch
 		or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1929,27 +1169,21 @@ local function createMobileJoystick()
 		end
 	end)
 end
-
 createMobileJoystick()
 
 function updateMobileControls()
-	if not IS_TOUCH then return end
-	if not joystickFrame then return end
-
+	if not IS_TOUCH or not joystickFrame then return end
 	local show = State.Fly or State.Ghost
 	joystickFrame.Visible = show
 	if upBtn   then upBtn.Visible   = show and State.Fly end
 	if downBtn then downBtn.Visible = show and State.Fly end
-
 	if not show then
 		Stick.active = false
 		Stick.dirX = 0
 		Stick.dirY = 0
 		Stick.up = false
 		Stick.down = false
-		if joystickKnob then
-			joystickKnob.Position = UDim2.new(0.5, 0, 0.5, 0)
-		end
+		if joystickKnob then joystickKnob.Position = UDim2.new(0.5, 0, 0.5, 0) end
 	end
 end
 
@@ -1959,33 +1193,23 @@ end
 floatingBtn = new("TextButton", {
 	Size = UDim2.fromOffset(IS_TOUCH and 56 or 46, IS_TOUCH and 56 or 46),
 	Position = UDim2.new(1, -80, 0.35, 0),
-	BackgroundColor3 = Theme.Bg,
-	BackgroundTransparency = 0.1,
-	BorderSizePixel = 0,
-	Text = "◈",
-	TextColor3 = Theme.Accent,
-	Font = Theme.FontBold,
-	TextSize = IS_TOUCH and 24 or 20,
-	AutoButtonColor = false,
-	Visible = false,
-	Parent = gui,
+	BackgroundColor3 = Theme.Bg, BackgroundTransparency = 0.1,
+	BorderSizePixel = 0, Text = "◈", TextColor3 = Theme.Accent,
+	Font = Theme.FontBold, TextSize = IS_TOUCH and 24 or 20,
+	AutoButtonColor = false, Visible = false, Parent = gui,
 })
 radius(floatingBtn, IS_TOUCH and 28 or 23)
 outline(floatingBtn, Theme.Accent, 2, 0.45)
 
 local fbDragging, fbMoved = false, false
 local fbStart, fbOrigin
-
 floatingBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 	or input.UserInputType == Enum.UserInputType.Touch then
-		fbDragging = true
-		fbMoved = false
-		fbStart = input.Position
-		fbOrigin = floatingBtn.Position
+		fbDragging = true; fbMoved = false
+		fbStart = input.Position; fbOrigin = floatingBtn.Position
 	end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
 	if not fbDragging then return end
 	if input.UserInputType == Enum.UserInputType.MouseMovement
@@ -1994,29 +1218,23 @@ UserInputService.InputChanged:Connect(function(input)
 		if math.abs(d.X) > 6 or math.abs(d.Y) > 6 then fbMoved = true end
 		floatingBtn.Position = UDim2.new(
 			fbOrigin.X.Scale, fbOrigin.X.Offset + d.X,
-			fbOrigin.Y.Scale, fbOrigin.Y.Offset + d.Y
-		)
+			fbOrigin.Y.Scale, fbOrigin.Y.Offset + d.Y)
 	end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 	or input.UserInputType == Enum.UserInputType.Touch then
 		fbDragging = false
 	end
 end)
-
 floatingBtn.MouseButton1Click:Connect(function()
 	if fbMoved then return end
 	setPanelVisible(true)
 end)
-
-if IS_TOUCH then
-	floatingBtn.Visible = true
-end
+if IS_TOUCH then floatingBtn.Visible = true end
 
 --==================================================================
---  键盘快捷键（PC）
+--  K 键
 --==================================================================
 UserInputService.InputBegan:Connect(function(input, processed)
 	if processed then return end
@@ -2030,7 +1248,6 @@ end)
 --  每帧更新
 --==================================================================
 local lastCount = -1
-
 local function countEnabled()
 	local n = 0
 	for _, v in pairs(State) do if v == true then n += 1 end end
@@ -2056,27 +1273,20 @@ RunService.Heartbeat:Connect(function()
 	if State.Fly and flyLV and flyAO then
 		local dir = getMoveDir(true)
 		flyLV.VectorVelocity = dir.Magnitude > 0.01
-			and dir.Unit * Config.FlySpeed
-			or Vector3.zero
+			and dir.Unit * Config.FlySpeed or Vector3.zero
 		local flat = getFlatLook(root)
 		flyAO.CFrame = CFrame.lookAt(root.Position, root.Position + flat)
 	end
 
 	if State.Ghost and ghostLV and ghostAO then
 		local dir = getMoveDir(false)
-
 		local params = RaycastParams.new()
 		params.FilterType = Enum.RaycastFilterType.Exclude
 		params.FilterDescendantsInstances = { LP.Character }
-
 		local hit = Workspace:Raycast(root.Position, Vector3.new(0, -1000, 0), params)
 		local targetY = hit and (hit.Position.Y + Config.GhostHeight) or root.Position.Y
 		local vy = math.clamp((targetY - root.Position.Y) * 14, -120, 120)
-
-		local h = dir.Magnitude > 0.01
-			and dir.Unit * Config.GhostSpeed
-			or Vector3.zero
-
+		local h = dir.Magnitude > 0.01 and dir.Unit * Config.GhostSpeed or Vector3.zero
 		ghostLV.VectorVelocity = Vector3.new(h.X, vy, h.Z)
 		local flat = getFlatLook(root)
 		ghostAO.CFrame = CFrame.lookAt(root.Position, root.Position + flat)
@@ -2110,14 +1320,10 @@ LP.CharacterAdded:Connect(function(char)
 		if State.SpeedUp then hum.WalkSpeed = Config.WalkSpeed end
 	end
 
-	local wasFly   = State.Fly
-	local wasGhost = State.Ghost
-
+	local wasFly, wasGhost = State.Fly, State.Ghost
 	if wasFly   then setFly(false)   end
 	if wasGhost then setGhost(false) end
-
 	task.wait(0.05)
-
 	if wasFly   then setFly(true)   end
 	if wasGhost then setGhost(true) end
 
@@ -2125,265 +1331,7 @@ LP.CharacterAdded:Connect(function(char)
 	updateMobileControls()
 end)
 
---==================================================================
---  屏幕旋转时刷新缩放
---==================================================================
-Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-	updateScale()
-end)
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 
-print("[黑客模拟器] 辅助终端 v3.0 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
+print("[黑客模拟器] 辅助终端 v3.1 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
 ]==]
-
-local mysteryLoaded = false
-
-mysteryButton.MouseButton1Click:Connect(function()
-    if mysteryLoaded then
-        statusLabel.Text = "状态: 神秘脚本已在运行"
-        return
-    end
-
-    statusLabel.Text = "状态: 神秘脚本加载中..."
-
-    local ok, err = pcall(function()
-        local fn = loadstring or load
-        if not fn then
-            error("当前环境不支持 loadstring")
-        end
-        local chunk = fn(MYSTERY_SCRIPT)
-        if not chunk then
-            error("脚本编译失败")
-        end
-        chunk()
-    end)
-
-    if ok then
-        mysteryLoaded = true
-        mysteryButton.Text = "✅ 神秘脚本已启用"
-        statusLabel.Text = "状态: 神秘脚本已执行"
-    else
-        statusLabel.Text = "状态: 神秘脚本失败 - " .. tostring(err)
-        warn("[神秘脚本] " .. tostring(err))
-    end
-end)
-
--- ===== 崩服逻辑（一次性装备背包中所有物品，再全部卸下，循环执行） =====
-local crashLooping = false   -- 默认不开启
-local crashRunning = false   -- 防止重复启动循环
-
--- 判断是否为可装备物品
-local function isEquippable(item)
-    return item:IsA("Tool") or item:IsA("HopperBin")
-end
-
--- 一次性装备背包里的所有物品（直接改 Parent，可绕过单工具限制）
-local function equipAll()
-    local character = localPlayer.Character
-    local backpack = localPlayer:FindFirstChild("Backpack")
-    if not character or not backpack then return end
-    for _, item in ipairs(backpack:GetChildren()) do
-        if isEquippable(item) then
-            pcall(function()
-                item.Parent = character
-            end)
-        end
-    end
-end
-
--- 一次性卸下角色身上的所有物品（放回背包）
-local function unequipAll()
-    local character = localPlayer.Character
-    local backpack = localPlayer:FindFirstChild("Backpack")
-    if not character or not backpack then return end
-    for _, item in ipairs(character:GetChildren()) do
-        if isEquippable(item) then
-            pcall(function()
-                item.Parent = backpack
-            end)
-        end
-    end
-    -- 保险：若 Humanoid 上还挂着工具，也一并卸下
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        pcall(function()
-            humanoid:UnequipTools()
-        end)
-    end
-end
-
--- 崩服主循环
-local function crashLoop()
-    crashRunning = true
-    while crashLooping do
-        equipAll()
-        task.wait(0.001)   -- 全部装备后的停留时间（0.001 秒）
-        if not crashLooping then break end
-        unequipAll()
-        task.wait(0.001)   -- 全部卸下后的停留时间（0.001 秒）
-    end
-    unequipAll()           -- 退出时确保干净状态
-    crashRunning = false
-end
-
--- 崩服按钮点击切换
-crashButton.MouseButton1Click:Connect(function()
-    if crashLooping then
-        -- 关闭崩服
-        crashLooping = false
-        crashButton.Text = "💥 崩服"
-        statusLabel.Text = "状态: 崩服已关闭"
-    else
-        -- 开启崩服
-        crashLooping = true
-        crashButton.Text = "⏹️ 停止崩服"
-        statusLabel.Text = "状态: 崩服中..."
-        if not crashRunning then
-            task.spawn(crashLoop)
-        end
-    end
-end)
-
--- 附身功能
-local function startAttaching()
-    if connection then
-        connection:Disconnect()
-        connection = nil
-    end
-    
-    if not targetPlayer then
-        statusLabel.Text = "状态: 错误 - 请先选择玩家"
-        return
-    end
-    
-    statusLabel.Text = "状态: 附身中 - " .. currentMode
-    
-    connection = RunService.Heartbeat:Connect(function()
-        local localChar = localPlayer.Character
-        local targetChar = targetPlayer.Character
-        
-        if not localChar or not targetChar then 
-            statusLabel.Text = "状态: 错误 - 角色不存在"
-            return 
-        end
-        
-        if not localChar:FindFirstChild("HumanoidRootPart") or not targetChar:FindFirstChild("HumanoidRootPart") then 
-            statusLabel.Text = "状态: 错误 - 缺少HumanoidRootPart"
-            return 
-        end
-        
-        local localHRP = localChar.HumanoidRootPart
-        local targetHRP = targetChar.HumanoidRootPart
-        
-        if currentMode == "骑在头上" then
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 3, 0)
-        elseif currentMode == "头上旋转" then
-            local angle = tick() * 3
-            local offset = CFrame.new(math.sin(angle) * 2, 3, math.cos(angle) * 2)
-            localHRP.CFrame = targetHRP.CFrame * offset
-        elseif currentMode == "背在后面" then
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -2)
-        elseif currentMode == "玩家重合" then
-            localHRP.CFrame = targetHRP.CFrame
-        elseif currentMode == "背后浮动" then
-            floatOffset = floatOffset + floatDirection * 0.1
-            if floatOffset > 2 then floatDirection = -1 end
-            if floatOffset < -2 then floatDirection = 1 end
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, floatOffset, -2)
-        elseif currentMode == "固定身后" then
-            -- 使用脚本的玩家固定在目标玩家身后（Z 轴正方向为后方）
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
-        elseif currentMode == "脚下遁地" then
-            local belowPos = targetHRP.Position + Vector3.new(0, -3, 0)
-            localHRP.CFrame = CFrame.new(belowPos, targetHRP.Position)
-        end
-    end)
-end
-
--- 停止附身
-local function stopAttaching()
-    if connection then
-        connection:Disconnect()
-        connection = nil
-    end
-    statusLabel.Text = "状态: 已停止附身"
-end
-
--- 按钮事件
-startButton.MouseButton1Click:Connect(startAttaching)
-stopButton.MouseButton1Click:Connect(stopAttaching)
-
--- 关闭按钮事件
-closeButton.MouseButton1Click:Connect(function()
-    stopAttaching()
-    -- 关闭崩服循环
-    if crashLooping then
-        crashLooping = false
-    end
-    screenGui:Destroy()
-    print("FE培根脚本附属恶搞 已关闭")
-end)
-
--- 最小化按钮事件
-local isMinimized = false
-local originalSize = mainFrame.Size
-local originalPosition = mainFrame.Position
-local minimizedSize = UDim2.new(0, 300, 0, 40)
-local minimizedPosition = UDim2.new(0, 10, 0, 10)
-
-minimizeButton.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    
-    if isMinimized then
-        mainFrame:TweenSize(minimizedSize, "Out", "Quad", 0.3)
-        mainFrame:TweenPosition(minimizedPosition, "Out", "Quad", 0.3)
-        minimizeButton.Text = "+"
-        statusLabel.Visible = false
-        playersFrame.Visible = false
-        modesFrame.Visible = false
-        controlsFrame.Visible = false
-        crashButton.Visible = false
-        mysteryButton.Visible = false
-        backgroundOverlay.Visible = false
-    else
-        mainFrame:TweenSize(originalSize, "Out", "Quad", 0.3)
-        mainFrame:TweenPosition(originalPosition, "Out", "Quad", 0.3)
-        minimizeButton.Text = "−"
-        statusLabel.Visible = true
-        playersFrame.Visible = true
-        modesFrame.Visible = true
-        controlsFrame.Visible = true
-        crashButton.Visible = true
-        mysteryButton.Visible = true
-        backgroundOverlay.Visible = true
-    end
-end)
-
--- 初始设置
-updatePlayersList()
-Players.PlayerAdded:Connect(updatePlayersList)
-Players.PlayerRemoving:Connect(updatePlayersList)
-
--- 手机端适配
-if UserInputService.TouchEnabled then
-    mainFrame.Size = UDim2.new(0, 320, 0, 530)
-    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -265)
-    originalSize = mainFrame.Size
-    originalPosition = mainFrame.Position
-    minimizedSize = UDim2.new(0, 320, 0, 45)
-    
-    -- 调整按钮大小便于触控
-    startButton.TextSize = 15
-    stopButton.TextSize = 15
-    crashButton.TextSize = 15
-    mysteryButton.TextSize = 15
-    for _, btn in pairs(playersScrolling:GetChildren()) do
-        if btn:IsA("TextButton") then
-            btn.TextSize = 13
-        end
-    end
-end
-
-print("FE培根脚本附属恶搞 加载成功！")
-print("作者: BaconScript Team")
-print("版本: 1.2.0")
-print("功能: 7种附身模式 + 崩服 + 神秘脚本")
