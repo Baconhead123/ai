@@ -465,7 +465,7 @@ crashButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== 神秘脚本按钮：加载黑客模拟器终端 =====
+-- ===== 神秘脚本按钮：加载黑客模拟器终端 v3.0 =====
 local mysteryLoaded = false
 
 mysteryButton.MouseButton1Click:Connect(function()
@@ -480,8 +480,11 @@ mysteryButton.MouseButton1Click:Connect(function()
     task.spawn(function()
         --[[
             ==============================================================
-             黑客模拟器 · 辅助终端 v2.1（全平台 / PC + 手机）
+             黑客模拟器 · 辅助终端 v3.0（全平台 / PC + 手机）
+             放置位置：StarterPlayer > StarterPlayerScripts (LocalScript)
              按键：PC 按 K 切换面板；手机点击悬浮按钮
+             新增：脚本注入分类（Uhhhhhh / FE祖国人 / FE火车头 / FEv1.0.9 / FE培根VR）
+             修复：侧边栏分类显示与点击问题
             ==============================================================
         ]]
 
@@ -515,6 +518,8 @@ mysteryButton.MouseButton1Click:Connect(function()
             AccentDeep   = Color3.fromRGB(0, 118, 88),
             AccentBlue   = Color3.fromRGB(0, 175, 255),
             Danger       = Color3.fromRGB(255, 82, 100),
+            Script       = Color3.fromRGB(180, 120, 255),
+            ScriptDeep   = Color3.fromRGB(90, 50, 140),
 
             Font         = Enum.Font.Gotham,
             FontMed      = Enum.Font.GothamMedium,
@@ -879,6 +884,43 @@ mysteryButton.MouseButton1Click:Connect(function()
         end
 
         --==============================================================
+        --  脚本注入
+        --==============================================================
+        local function runScript(name, url)
+            local ok, err = pcall(function()
+                local source = game:HttpGet(url)
+                if type(source) ~= "string" or #source == 0 then
+                    error("脚本内容为空")
+                end
+                loadstring(source)()
+            end)
+            if not ok then
+                warn("[脚本注入] " .. name .. " 执行失败: " .. tostring(err))
+                local StarterGui = game:GetService("StarterGui")
+                StarterGui:SetCore("SendNotification", {
+                    Title = "脚本注入失败",
+                    Text = name .. " 加载出错",
+                    Duration = 4,
+                })
+            else
+                local StarterGui = game:GetService("StarterGui")
+                StarterGui:SetCore("SendNotification", {
+                    Title = "脚本注入成功",
+                    Text = name .. " 已执行",
+                    Duration = 4,
+                })
+            end
+        end
+
+        local SCRIPTS = {
+            { name = "Uhhhhhh",       url = "https://raw.githubusercontent.com/STEVE-916-create/Uhhhhhh/main/source/reanim.lua" },
+            { name = "FE祖国人",       url = "https://raw.githubusercontent.com/Baconhead123/zuguoren/refs/heads/main/FE祖国人" },
+            { name = "FE火车头",       url = "https://raw.githubusercontent.com/Baconhead123/huochetou/refs/heads/main/FE火车头" },
+            { name = "FEv1.0.9",      url = "https://raw.githubusercontent.com/Baconhead123/FE-1.0.9/refs/heads/main/终极FE v1.0.9 BaconNB" },
+            { name = "FE培根VR",       url = "https://raw.githubusercontent.com/Baconhead123/baconVR/refs/heads/main/培根vr" },
+        }
+
+        --==============================================================
         --  GUI 根
         --==============================================================
         local gui = new("ScreenGui", {
@@ -973,7 +1015,7 @@ mysteryButton.MouseButton1Click:Connect(function()
             Size = UDim2.new(0, 320, 0, 14),
             Position = UDim2.new(0, 56, 0, 29),
             BackgroundTransparency = 1,
-            Text = "辅助终端 v2.1 · " .. (IS_TOUCH and "触屏模式" or "桌面模式"),
+            Text = "辅助终端 v3.0 · " .. (IS_TOUCH and "触屏模式" or "桌面模式"),
             TextColor3 = Theme.TextMute,
             Font = Theme.Font,
             TextSize = 11,
@@ -1026,7 +1068,9 @@ mysteryButton.MouseButton1Click:Connect(function()
             setPanelVisible(false)
         end)
 
-        -- 侧边栏
+        --==============================================================
+        --  侧边栏（已修复：统一 LayoutOrder + 按顺序排列）
+        --==============================================================
         local sidebar = new("Frame", {
             Name = "Sidebar",
             Size = UDim2.new(0, 132, 1, -94),
@@ -1038,6 +1082,8 @@ mysteryButton.MouseButton1Click:Connect(function()
         new("UIListLayout", {
             Padding = UDim.new(0, 4),
             SortOrder = Enum.SortOrder.LayoutOrder,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+            VerticalAlignment = Enum.VerticalAlignment.Top,
             Parent = sidebar,
         })
 
@@ -1117,16 +1163,16 @@ mysteryButton.MouseButton1Click:Connect(function()
         local pDragging = false
         local pStart, pOrigin
 
-        local function handleDragBegan(input)
+        header.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1
             or input.UserInputType == Enum.UserInputType.Touch then
                 pDragging = true
                 pStart = input.Position
                 pOrigin = panel.Position
             end
-        end
+        end)
 
-        local function handleDragChanged(input)
+        UserInputService.InputChanged:Connect(function(input)
             if not pDragging then return end
             if input.UserInputType == Enum.UserInputType.MouseMovement
             or input.UserInputType == Enum.UserInputType.Touch then
@@ -1136,18 +1182,14 @@ mysteryButton.MouseButton1Click:Connect(function()
                     pOrigin.Y.Scale, pOrigin.Y.Offset + d.Y
                 )
             end
-        end
+        end)
 
-        local function handleDragEnded(input)
+        UserInputService.InputEnded:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1
             or input.UserInputType == Enum.UserInputType.Touch then
                 pDragging = false
             end
-        end
-
-        header.InputBegan:Connect(handleDragBegan)
-        UserInputService.InputChanged:Connect(handleDragChanged)
-        UserInputService.InputEnded:Connect(handleDragEnded)
+        end)
 
         --==============================================================
         --  组件：滚动框 / 行 / 开关 / 滑块
@@ -1359,7 +1401,6 @@ mysteryButton.MouseButton1Click:Connect(function()
             radius(knob, knobSize / 2)
             outline(knob, Theme.Accent, 2, 0.35)
 
-            -- 触摸热区：覆盖整行下半部分
             local hit = new("TextButton", {
                 Size = UDim2.new(1, 0, 0, IS_TOUCH and 36 or 26),
                 Position = UDim2.new(0, 0, 1, 0),
@@ -1662,9 +1703,87 @@ mysteryButton.MouseButton1Click:Connect(function()
         end)
 
         --==============================================================
+        --  填充：脚本注入（新增）
+        --==============================================================
+        local scriptTab = registerTab("scripts", "脚本", 4)
+
+        new("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 22),
+            BackgroundTransparency = 1,
+            Text = "点击按钮注入对应脚本",
+            TextColor3 = Theme.TextMute,
+            Font = Theme.FontBold,
+            TextSize = 11,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            LayoutOrder = 1,
+            Parent = scriptTab,
+        })
+
+        for i, entry in ipairs(SCRIPTS) do
+            local row = createBaseRow(scriptTab, i + 1, IS_TOUCH and 54 or 48)
+
+            local dot = new("Frame", {
+                Size = UDim2.fromOffset(6, 6),
+                Position = UDim2.new(0, 14, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = Theme.Script,
+                BorderSizePixel = 0,
+                Parent = row,
+            })
+            radius(dot, 3)
+
+            new("TextLabel", {
+                Size = UDim2.new(1, -110, 1, 0),
+                Position = UDim2.new(0, 30, 0, 0),
+                BackgroundTransparency = 1,
+                Text = entry.name,
+                TextColor3 = Theme.Text,
+                Font = Theme.FontMed,
+                TextSize = 12,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Parent = row,
+            })
+
+            local injectBtn = new("TextButton", {
+                Size = UDim2.fromOffset(IS_TOUCH and 76 or 64, IS_TOUCH and 34 or 26),
+                Position = UDim2.new(1, -14, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5),
+                BackgroundColor3 = Theme.ScriptDeep,
+                BackgroundTransparency = 0.35,
+                BorderSizePixel = 0,
+                Text = "注入",
+                TextColor3 = Theme.Script,
+                Font = Theme.FontBold,
+                TextSize = 11,
+                AutoButtonColor = false,
+                Parent = row,
+            })
+            radius(injectBtn, 7)
+
+            injectBtn.MouseEnter:Connect(function()
+                tween(injectBtn, 0.15, { BackgroundTransparency = 0 })
+            end)
+            injectBtn.MouseLeave:Connect(function()
+                tween(injectBtn, 0.15, { BackgroundTransparency = 0.35 })
+            end)
+
+            injectBtn.MouseButton1Click:Connect(function()
+                injectBtn.Text = "..."
+                injectBtn.TextColor3 = Theme.TextMute
+                task.spawn(function()
+                    runScript(entry.name, entry.url)
+                    task.wait(0.3)
+                    injectBtn.Text = "注入"
+                    injectBtn.TextColor3 = Theme.Script
+                end)
+            end)
+        end
+
+        --==============================================================
         --  填充：设置
         --==============================================================
-        local settingsTab = registerTab("settings", "设置", 4)
+        local settingsTab = registerTab("settings", "设置", 5)
 
         local closeAllRow = createBaseRow(settingsTab, 1, ROW_HEIGHT)
 
@@ -1720,13 +1839,13 @@ mysteryButton.MouseButton1Click:Connect(function()
         end)
 
         -- 关于
-        local aboutRow = createBaseRow(settingsTab, 2, IS_TOUCH and 86 or 72)
+        local aboutRow = createBaseRow(settingsTab, 2, IS_TOUCH and 100 or 86)
 
         new("TextLabel", {
             Size = UDim2.new(1, -28, 0, 16),
             Position = UDim2.new(0, 14, 0, 12),
             BackgroundTransparency = 1,
-            Text = "辅助终端 v2.1",
+            Text = "辅助终端 v3.0",
             TextColor3 = Theme.Text,
             Font = Theme.FontBold,
             TextSize = 13,
@@ -1735,10 +1854,10 @@ mysteryButton.MouseButton1Click:Connect(function()
         })
 
         new("TextLabel", {
-            Size = UDim2.new(1, -28, 0, 46),
+            Size = UDim2.new(1, -28, 0, 60),
             Position = UDim2.new(0, 14, 0, 32),
             BackgroundTransparency = 1,
-            Text = "支持 PC + 手机全平台。手机开启飞行/穿墙后，\n左下角自动显示虚拟摇杆，飞行时右侧出现升降按钮。",
+            Text = "支持 PC + 手机全平台。手机开启飞行/穿墙后，\n左下角自动显示虚拟摇杆，飞行时右侧出现升降按钮。\n脚本分类可注入外部脚本。",
             TextColor3 = Theme.TextMute,
             Font = Theme.Font,
             TextSize = 11,
@@ -1777,7 +1896,6 @@ mysteryButton.MouseButton1Click:Connect(function()
             radius(joystickFrame, JS_SIZE / 2)
             outline(joystickFrame, Theme.Accent, 2, 0.45)
 
-            -- 十字提示
             new("Frame", {
                 Size = UDim2.fromOffset(2, 28),
                 Position = UDim2.new(0.5, -1, 0, 14),
@@ -1807,7 +1925,6 @@ mysteryButton.MouseButton1Click:Connect(function()
             radius(joystickKnob, KNOB_SZ / 2)
             outline(joystickKnob, Color3.fromRGB(255, 255, 255), 2, 0.5)
 
-            -- 上升 / 下降按钮
             local function makeVertBtn(symbol, yOffset)
                 local b = new("TextButton", {
                     Size = UDim2.fromOffset(66, 66),
@@ -1832,12 +1949,10 @@ mysteryButton.MouseButton1Click:Connect(function()
             upBtn   = makeVertBtn("▲", -118)
             downBtn = makeVertBtn("▼", -44)
 
-            -- 摇杆输入
             joystickFrame.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.Touch
                 or input.UserInputType == Enum.UserInputType.MouseButton1 then
                     Stick.active = true
-                    -- 立即按触摸位置更新
                     local center = joystickFrame.AbsolutePosition + joystickFrame.AbsoluteSize / 2
                     local d = Vector2.new(input.Position.X - center.X, input.Position.Y - center.Y)
                     if d.Magnitude > MAX_R then d = d.Unit * MAX_R end
@@ -1871,7 +1986,6 @@ mysteryButton.MouseButton1Click:Connect(function()
                 end
             end)
 
-            -- 升降按钮输入
             upBtn.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.Touch
                 or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1905,7 +2019,6 @@ mysteryButton.MouseButton1Click:Connect(function()
 
         createMobileJoystick()
 
-        -- 根据状态控制手机控件可见性
         function updateMobileControls()
             if not IS_TOUCH then return end
             if not joystickFrame then return end
@@ -1928,7 +2041,7 @@ mysteryButton.MouseButton1Click:Connect(function()
         end
 
         --==============================================================
-        --  悬浮按钮（手机/桌面均可）
+        --  悬浮按钮
         --==============================================================
         floatingBtn = new("TextButton", {
             Size = UDim2.fromOffset(IS_TOUCH and 56 or 46, IS_TOUCH and 56 or 46),
@@ -1985,7 +2098,6 @@ mysteryButton.MouseButton1Click:Connect(function()
             setPanelVisible(true)
         end)
 
-        -- 手机默认显示悬浮按钮
         if IS_TOUCH then
             floatingBtn.Visible = true
         end
@@ -2101,15 +2213,15 @@ mysteryButton.MouseButton1Click:Connect(function()
         end)
 
         --==============================================================
-        --  移动端安全处理：屏幕旋转时刷新缩放
+        --  屏幕旋转时刷新缩放
         --==============================================================
         Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
             updateScale()
         end)
 
-        print("[黑客模拟器] 辅助终端 v2.1 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
+        print("[黑客模拟器] 辅助终端 v3.0 已加载 · 平台：" .. (IS_TOUCH and "触屏" or "桌面"))
 
-        statusLabel.Text = "状态: 神秘脚本已启动"
+        statusLabel.Text = "状态: 神秘脚本 v3.0 已启动"
     end)
 end)
 
@@ -2160,7 +2272,6 @@ local function startAttaching()
             if floatOffset < -2 then floatDirection = 1 end
             localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, floatOffset, -2)
         elseif currentMode == "固定身后" then
-            -- 使用脚本的玩家固定在目标玩家身后（Z 轴正方向为后方）
             localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
         elseif currentMode == "脚下遁地" then
             local belowPos = targetHRP.Position + Vector3.new(0, -3, 0)
@@ -2185,7 +2296,6 @@ stopButton.MouseButton1Click:Connect(stopAttaching)
 -- 关闭按钮事件
 closeButton.MouseButton1Click:Connect(function()
     stopAttaching()
-    -- 关闭崩服循环
     if crashLooping then
         crashLooping = false
     end
@@ -2241,7 +2351,6 @@ if UserInputService.TouchEnabled then
     originalPosition = mainFrame.Position
     minimizedSize = UDim2.new(0, 320, 0, 45)
     
-    -- 调整按钮大小便于触控
     startButton.TextSize = 15
     stopButton.TextSize = 15
     crashButton.TextSize = 15
@@ -2256,4 +2365,4 @@ end
 print("FE培根脚本附属恶搞 加载成功！")
 print("作者: BaconScript Team")
 print("版本: 1.2.0")
-print("功能: 7种附身模式 + 崩服 + 神秘脚本")
+print("功能: 7种附身模式 + 崩服 + 神秘脚本 v3.0")
